@@ -1,5 +1,5 @@
 {
-  "_comment": "Dane demo dla F02. Jedno źródło prawdy dla seeda Mercura i mocków agentów (S3) i storefrontu (S4). Ceny netto w PLN, jednostki główne (4690 = 4690,00 zł). Pola rules.* są prywatne: nie mogą trafić do API sklepu.",
+  "_comment": "Kopia danych demo do mocków agentów (S3) i storefrontu (S4). Źródło prawdy dla seeda: DEMO_SELLERS/DEMO_OFFERS w marketplace/packages/api/src/scripts/seed-data.ts. Ceny w PLN, jednostki główne (4690 = 4690,00 zł). Pola rules.* są prywatne: nie mogą trafić do API sklepu. Prawdziwe ID produktów i ofert bierz z /store/offers.",
   "currency_code": "pln",
   "region": { "name": "Polska", "countries": ["pl"] },
   "category": { "name": "Laptopy", "handle": "laptopy" },
