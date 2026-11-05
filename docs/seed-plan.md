@@ -22,18 +22,19 @@ cd marketplace && bun run dev            # API :9000, admin :9000/dashboard, spr
 
 | Produkt | Sklep | Cena | Min (prywatne) | Stan | Rabat wolumenowy |
 |---|---|---|---|---|---|
-| Apple MacBook Air 13 M4 16 GB / 512 GB | TechHurt | 4690 | 4390 | 25 | 10+ 2%, 20+ 4% |
-| | iStacja | 4790 | 4290 | 60 | 10+ 3%, 20+ 6% |
-| Lenovo ThinkPad T14 Gen 5 16 GB / 512 GB | TechHurt | 4290 | 3990 | **15** | 10+ 3% |
-| | LaptoPol | 4390 | 3950 | 80 | 10+ 3%, 25+ 7% |
-| HP EliteBook 840 G11 16 GB / 512 GB | TechHurt | 4490 | 4250 | **8** | brak |
-| | LaptoPol | 4590 | 4190 | 40 | 10+ 4% |
+| Apple MacBook Air 13 M4 16 GB / 512 GB | TechHurt | 4690 | 4390 | 10 000 | 10+ 2%, 20+ 4% |
+| | iStacja | 4790 | 4290 | 10 000 | 10+ 3%, 20+ 6% |
+| Lenovo ThinkPad T14 Gen 5 16 GB / 512 GB | TechHurt | 4290 | 3990 | 10 000 | 10+ 3% |
+| | LaptoPol | 4390 | 3950 | 10 000 | 10+ 3%, 25+ 7% |
+| HP EliteBook 840 G11 16 GB / 512 GB | TechHurt | 4490 | 4250 | 10 000 | brak |
+| | LaptoPol | 4590 | 4190 | 10 000 | 10+ 4% |
 
 Scenariusz „20 MacBooków, 30 Lenovo, 10 HP":
 
 - **MacBooki:** iStacja ma wyższą cenę katalogową, ale schodzi niżej (4290 vs 4390). Wygrywa „droższy" sklep.
-- **Lenovo:** TechHurt jest tańszy, ale ma tylko 15 sztuk. Albo całość z LaptoPolu, albo podział 15 + 15.
-- **HP:** tylko LaptoPol ma 10 sztuk.
+- **Stan:** każda oferta ma 10 000 sztuk (`OFFER_STOCK` w `seed-data.ts`), więc stan nie ogranicza zapytań. Podział zamówienia wynika tylko z cen, a `OVER_STOCK` zadziała dopiero powyżej 10 000 sztuk.
+- **Lenovo:** LaptoPol schodzi niżej (3950 vs 3990), TechHurt ma niższą cenę katalogową.
+- **HP:** LaptoPol schodzi niżej (4190 vs 4250).
 - Wynik to zamówienie dzielone (F09): Maki od iStacji, Lenovo i HP od LaptoPolu.
 - Licznik (F10): katalog u zwycięzców 273 400 zł, przy cenach minimalnych 246 200 zł, czyli najwyżej 27 200 zł (ok. 10%) oszczędności.
 

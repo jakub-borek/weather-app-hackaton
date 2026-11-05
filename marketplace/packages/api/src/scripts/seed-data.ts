@@ -190,6 +190,9 @@ export const DEMO_SELLERS: SellerConfig[] = [
   seller("iStacja", "istacja", ["Igor", "Stacyjny"], ["Gdańsk", "ul. Grunwaldzka 82"], [], 0, "elastyczny"),
 ];
 
+// Stan magazynowy każdej oferty: bardzo dużo, żeby stan nie blokował żadnego zapytania na demo.
+export const OFFER_STOCK = 10_000;
+
 export type VolumeDiscount = { min_quantity: number; discount_pct: number };
 export type DemoOffer = {
   seller: string; // część e-maila przed @
@@ -201,16 +204,16 @@ export type DemoOffer = {
 
 export const DEMO_OFFERS: Record<string, DemoOffer[]> = {
   "Apple MacBook Air 13 M4 16 GB / 512 GB": [
-    { seller: "techhurt", price: 4690, min_price: 4390, stock: 25, volume_discounts: [{ min_quantity: 10, discount_pct: 2 }, { min_quantity: 20, discount_pct: 4 }] },
-    { seller: "istacja", price: 4790, min_price: 4290, stock: 60, volume_discounts: [{ min_quantity: 10, discount_pct: 3 }, { min_quantity: 20, discount_pct: 6 }] },
+    { seller: "techhurt", price: 4690, min_price: 4390, stock: OFFER_STOCK, volume_discounts: [{ min_quantity: 10, discount_pct: 2 }, { min_quantity: 20, discount_pct: 4 }] },
+    { seller: "istacja", price: 4790, min_price: 4290, stock: OFFER_STOCK, volume_discounts: [{ min_quantity: 10, discount_pct: 3 }, { min_quantity: 20, discount_pct: 6 }] },
   ],
   "Lenovo ThinkPad T14 Gen 5 16 GB / 512 GB": [
-    { seller: "techhurt", price: 4290, min_price: 3990, stock: 15, volume_discounts: [{ min_quantity: 10, discount_pct: 3 }] },
-    { seller: "laptopol", price: 4390, min_price: 3950, stock: 80, volume_discounts: [{ min_quantity: 10, discount_pct: 3 }, { min_quantity: 25, discount_pct: 7 }] },
+    { seller: "techhurt", price: 4290, min_price: 3990, stock: OFFER_STOCK, volume_discounts: [{ min_quantity: 10, discount_pct: 3 }] },
+    { seller: "laptopol", price: 4390, min_price: 3950, stock: OFFER_STOCK, volume_discounts: [{ min_quantity: 10, discount_pct: 3 }, { min_quantity: 25, discount_pct: 7 }] },
   ],
   "HP EliteBook 840 G11 16 GB / 512 GB": [
-    { seller: "techhurt", price: 4490, min_price: 4250, stock: 8, volume_discounts: [] },
-    { seller: "laptopol", price: 4590, min_price: 4190, stock: 40, volume_discounts: [{ min_quantity: 10, discount_pct: 4 }] },
+    { seller: "techhurt", price: 4490, min_price: 4250, stock: OFFER_STOCK, volume_discounts: [] },
+    { seller: "laptopol", price: 4590, min_price: 4190, stock: OFFER_STOCK, volume_discounts: [{ min_quantity: 10, discount_pct: 4 }] },
   ],
 };
 
@@ -232,5 +235,5 @@ export function minPriceFor(seller: string, productTitle: string, offerPrice: nu
 export const OFFERS_PER_PRODUCT = { min: 2, max: 5 };
 // Rozrzut ceny sprzedawcy wokół ceny katalogowej: ±10%.
 export const PRICE_JITTER = 0.1;
-// Stan magazynowy na ofertę. Niski zakres, żeby duże RFQ wymagały kilku sprzedawców.
-export const STOCK_RANGE = { min: 5, max: 120 };
+// Stan magazynowy na ofertę: stały OFFER_STOCK. Zakres zostaje, żeby seed losował tak samo (te same ceny).
+export const STOCK_RANGE = { min: OFFER_STOCK, max: OFFER_STOCK };
