@@ -72,11 +72,11 @@
         "endpointy z kontraktu odpowiadają (curl i odpowiedź w evidence)",
         "RFQ trafia tylko do sprzedawców, którzy mają dane produkty"
       ],
-      "owner": "",
-      "status": "not-started",
-      "started_at": "",
-      "done_at": "",
-      "evidence": ""
+      "owner": "piotrkukuc12",
+      "status": "done",
+      "started_at": "2026-11-05 19:40",
+      "done_at": "2026-11-05 20:00",
+      "evidence": "Moduł rfq + workflowy (src/workflows/rfq.ts) + trasy store/vendor wg docs/rfq-contract.md. PK=... bun scripts/rfq-smoke.ts: 12/12 OK. RFQ na MacBook Air M4 + EliteBook trafia tylko do iStacja, LaptoPol, TechHurt (jedyni z ofertami na te warianty). Store API bez accept_token i min_unit_price. tsc --noEmit czysty."
     },
     {
       "id": "F04",
@@ -89,11 +89,11 @@
         "API odrzuca ofertę poniżej ceny minimalnej (curl w evidence)",
         "akceptacja możliwa tylko przez kupującego-człowieka, nie przez agenta"
       ],
-      "owner": "",
-      "status": "not-started",
-      "started_at": "",
-      "done_at": "",
-      "evidence": ""
+      "owner": "piotrkukuc12",
+      "status": "done",
+      "started_at": "2026-11-05 19:40",
+      "done_at": "2026-11-05 20:00",
+      "evidence": "scripts/rfq-smoke.ts: 422 BELOW_MIN_PRICE (4600 ok, 3000 odrzucone), 422 OVER_STOCK (999 szt.), 422 NOT_YOUR_TURN, limit rund (round >= max_rounds wymusza final), 422 INVALID_ACCEPT_TOKEN. accept_token zwraca tylko POST /store/rfqs, agent go nie dostaje."
     },
     {
       "id": "F05",

@@ -32,6 +32,7 @@ module.exports = withMercur({
     seller_registration: true
   },
   modules: [
+    { resolve: './src/modules/rfq' },
     {
       resolve: '@mercurjs/core/modules/admin-ui',
       options: {

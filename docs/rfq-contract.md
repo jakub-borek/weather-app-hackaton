@@ -57,7 +57,9 @@ Wszystkie ceny w PLN, jednostki główne (4690 = 4690 zł), netto. Waluta zawsze
 3. Sprzedawca odpowiada (`offer` / `counter` / `final` / `decline`), negocjacja przechodzi na `awaiting_buyer`, `round += 1`. Jeśli `round == max_rounds`, backend zapisuje wiadomość jako `final`.
 4. Kupujący odpowiada `counter` (wraca do `awaiting_seller`) albo `stop` (ostatnia oferta sprzedawcy staje się końcowa, status `final`).
 5. Gdy każda negocjacja jest `final` albo `declined`, RFQ ma status `ready`.
-6. Człowiek w UI wybiera negocjacje i akceptuje. Wybrane dostają `accepted`, reszta `rejected`, RFQ `accepted`, a F08 tworzy zamówienia.
+6. Człowiek w UI wybiera negocjacje i akceptuje. Można zaakceptować negocjację `final` albo `awaiting_buyer`, czyli bieżącą ofertę sprzedawcy bez czekania na koniec. Wybrane dostają `accepted`, reszta `rejected`, RFQ `accepted`, a F08 tworzy zamówienia.
+
+> **Zaimplementowane (F03/F04).** Wzór klienta i szybki test całego flow: `PK=<klucz> bun scripts/rfq-smoke.ts`. Każde uruchomienie tworzy zamówienia i rezerwuje stan.
 
 Ruch nie w swojej kolejce kończy się błędem `NOT_YOUR_TURN`.
 
