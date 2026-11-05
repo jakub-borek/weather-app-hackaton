@@ -30,6 +30,17 @@ cd marketplace && bun run dev             # API :9000, admin :9000/dashboard, sp
 - **Seed:** 15 sprzedawców, 92 produkty elektroniczne w 6 kategoriach (laptopy, komputery, monitory, peryferia, podzespoły, akcesoria), ok. 300 ofert w PLN. Scenariusz demo „20 MacBooków, 30 Lenovo, 10 HP" ma stałe oferty (`DEMO_OFFERS`).
 - **Ceny minimalne nie są w `metadata`,** bo Store API zwraca je publicznie. Są w `minPriceFor()` w `seed-data.ts`.
 - **Klucz publiczny dla storefrontu** wypisuje seed na końcu logu.
+- **Dev serwer panelu admina chodzi na :7010,** nie na :7000, bo tam na macOS siedzi AirPlay Receiver.
+
+## Udostępnienie zespołowi (ngrok)
+
+```bash
+cd marketplace/packages/api && bun run dev   # sam backend
+./scripts/share-marketplace.sh               # tunel, build paneli pod publiczny URL, linki do wysłania
+./scripts/share-marketplace.sh --stop        # koniec
+```
+
+Szczegóły, limity darmowego ngrok i pułapki: [`docs/share-ngrok.md`](docs/share-ngrok.md).
 
 ## Co gdzie jest
 

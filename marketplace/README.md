@@ -38,7 +38,7 @@ bun dev
 ```
 
 5. Open `http://localhost:9000` to access the Medusa backend
-6. Open `http://localhost:7000` to access the admin dashboard
+6. Open `http://localhost:7010` to access the admin dashboard
 6. Open `http://localhost:7001` to access the vendor dashboard
 
 That's it! Follow the on-screen instructions to login and create your first admin user.

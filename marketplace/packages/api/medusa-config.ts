@@ -38,6 +38,9 @@ module.exports = withMercur({
       options: {
         appDir: dashboardAppDir('admin'),
         path: '/dashboard',
+        // Not 7000: macOS AirPlay Receiver listens there, Mercur mistakes it for the
+        // admin Vite dev server and proxies /dashboard to it (403). Matches apps/admin dev port.
+        viteDevServerPort: 7010,
       }
     },
     {
