@@ -1,23 +1,23 @@
 # Pitch deck
 
-- `index.html`: źródło prezentacji, 5 slajdów. Edytujesz tylko ten plik.
-- `pitch.pdf`: wersja dla jurorów, generowana z `index.html`. Nie edytuj jej ręcznie.
+- `index.html`: the deck source, 5 slides. Edit only this file.
+- `pitch.pdf`: the version for judges, generated from `index.html`. Do not edit it by hand.
 
-## Podgląd
+## Preview
 
-Otwórz `index.html` w przeglądarce. Strzałki ← → przełączają slajdy, `F` włącza pełny ekran. Numer slajdu jest w adresie (`#3`).
+Open `index.html` in a browser. Arrow keys ← → switch slides, `F` toggles fullscreen. The slide number is in the URL (`#3`).
 
-## Edycja
+## Editing
 
-- Każdy slajd to jeden `<section class="slide">` w kolejności 01–05. Teksty zmieniasz bezpośrednio w HTML.
-- Slajd ma stały rozmiar 1600×900 i skaluje się do okna. Po zmianie sprawdź, czy tekst nie nachodzi na stopkę.
-- Kolory są w zmiennych CSS na górze pliku (`--purple`, `--orange` itd.).
-- Liczby na slajdzie 3 (273 400 → 248 600 zł) pochodzą z przebiegu F05 w trybie reguł. Po przebiegu z Grokiem podmień je.
+- Each slide is one `<section class="slide">`, in order 01–05. Change the text directly in the HTML.
+- A slide has a fixed size of 1600×900 and scales to the window. After a change, check that text does not overlap the footer.
+- Colors are CSS variables at the top of the file (`--purple`, `--orange` etc.).
+- The numbers on slide 3 (273 400 → 248 600 zł) come from the F05 run in rule mode. Replace them after a run with Grok.
 
-## PDF po zmianach
+## PDF after changes
 
 ```bash
 ./scripts/pitch-pdf.sh
 ```
 
-Potem obejrzyj `pitch.pdf` i zacommituj oba pliki razem.
+Then check `pitch.pdf` and commit both files together.

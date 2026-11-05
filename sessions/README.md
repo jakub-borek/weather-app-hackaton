@@ -3,18 +3,18 @@
 Exports of the team's AI coding sessions (Claude Code, Codex, Cursor, Grok Bot), as required by the hackathon
 submission guidelines. Commit history and the per-person journals in `harness/journal/` show when the work was done.
 
-## Dla zespołu
+## For the team
 
-Wymóg organizatorów: eksporty sesji mają być **tutaj, w `/sessions` w roocie repo** (nie w `harness/sessions/`).
+Organizers' requirement: session exports go **here, in `/sessions` at the repo root** (not in `harness/sessions/`).
 
-- **Claude Code:** `/export`, zapis do pliku w tym folderze.
-- **Codex, Cursor, Grok Bot i inne:** skopiuj transkrypt do pliku w tym folderze.
-- Nazwa pliku: `<imię>-<HHMM>-<temat>.md`, np. `piotr-1930-rfq-api.md`.
+- **Claude Code:** `/export`, save the file in this folder.
+- **Codex, Cursor, Grok Bot and others:** copy the transcript into a file in this folder.
+- File name: `<name>-<HHMM>-<topic>.md`, e.g. `piotr-1930-rfq-api.md`.
 
-Przed commitem sprawdź, czy nie ma sekretów (klucze API, tokeny, hasła, `.env`):
+Before committing, check for secrets (API keys, tokens, passwords, `.env` contents):
 
 ```bash
-grep -niE 'sk-[a-z0-9]|xai-[a-z0-9]|api[_-]?key|secret|token|password' sessions/<plik>.md
+grep -niE 'sk-[a-z0-9]|xai-[a-z0-9]|api[_-]?key|secret|token|password' sessions/<file>.md
 ```
 
-Zamaskuj znalezione wartości. Commit: `chore(harness): sesja <imię> <temat>`.
+Mask anything you find. Commit: `chore(harness): session <name> <topic>`.

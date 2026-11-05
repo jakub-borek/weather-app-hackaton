@@ -1,13 +1,13 @@
-# Marketplace RFQ z negocjacją agentów
+# RFQ marketplace with agent negotiation
 
 > **Judges, start here: [Pitch deck (PDF, 5 slides)](pitch/pitch.pdf)**. Interactive version: [`pitch/index.html`](pitch/index.html) (download and open locally, arrow keys to navigate).
 >
-> AI coding session exports: [`sessions/`](sessions/). Product spec (Polish): [`product.md`](product.md).
+> AI coding session exports: [`sessions/`](sessions/). Product spec: [`product.md`](product.md).
 
-Hackathon. Marketplace na open source Mercurze, w którym agent kupującego negocjuje z agentami sprzedawców, a człowiek akceptuje wynik i powstaje zamówienie.
+Hackathon project. A marketplace built on open-source Mercur, where the buyer's agent negotiates with sellers' agents, the human approves the result, and a real order is created.
 
-- **Co budujemy:** [`product.md`](product.md)
-- **Jak pracujemy (ludzie i agenci):** [`AGENTS.md`](AGENTS.md)
+- **What we build:** [`product.md`](product.md)
+- **How we work (humans and agents):** [`AGENTS.md`](AGENTS.md)
 
 ## Start
 
@@ -17,44 +17,44 @@ cd weather-app-hackaton
 ./init.sh
 ```
 
-`./init.sh` sprawdza środowisko i pokazuje stan zespołu: kto co robi, co jest gotowe, co można wziąć.
+`./init.sh` checks the environment and shows the team status: who is doing what, what is done, what is free to take.
 
-## Marketplace lokalnie (Mercur 2.4.1)
+## Marketplace locally (Mercur 2.4.1)
 
-Wymagane: Docker, Node >= 22, Bun.
+Requires Docker, Node >= 22 and Bun.
 
 ```bash
-./scripts/setup-marketplace.sh            # Postgres + Redis, .env, migracje, seed, konto admina
-./scripts/setup-marketplace.sh --reset    # to samo na czystej bazie
-cd marketplace && bun run dev             # API :9000, admin :9000/dashboard, sprzedawca :9000/seller
+./scripts/setup-marketplace.sh            # Postgres + Redis, .env, migrations, seed, admin account
+./scripts/setup-marketplace.sh --reset    # the same on a clean database
+cd marketplace && bun run dev             # API :9000, admin :9000/dashboard, seller panel :9000/seller
 ```
 
 - **Admin:** `admin@example.com` / `supersecret`
-- **Sprzedawcy:** hasło `supersecret`, loginy w `marketplace/packages/api/src/scripts/seed-data.ts`, np. `techhub@example.com`. Sklepy demo to `techhurt@`, `laptopol@` i `istacja@example.com`.
-- **Seed:** 15 sprzedawców, 92 produkty elektroniczne w 6 kategoriach (laptopy, komputery, monitory, peryferia, podzespoły, akcesoria), ok. 300 ofert w PLN. Scenariusz demo „20 MacBooków, 30 Lenovo, 10 HP" ma stałe oferty (`DEMO_OFFERS`).
-- **Ceny minimalne nie są w `metadata`,** bo Store API zwraca je publicznie. Są w `minPriceFor()` w `seed-data.ts`.
-- **Klucz publiczny dla storefrontu** wypisuje seed na końcu logu.
-- **Zdjęcia produktów:** `bun scripts/product-images.ts` przy działającym backendzie (także po `--reset`). Ściąga zdjęcia z Wikimedia Commons do `packages/api/static/products/` (poza gitem) i przypina je produktom.
-- **Dev serwer panelu admina chodzi na :7010,** nie na :7000, bo tam na macOS siedzi AirPlay Receiver.
+- **Sellers:** password `supersecret`, logins in `marketplace/packages/api/src/scripts/seed-data.ts`, e.g. `techhub@example.com`. The demo shops are `techhurt@`, `laptopol@` and `istacja@example.com`.
+- **Seed:** 15 sellers, 92 electronics products in 6 categories (laptops, computers, monitors, peripherals, components, accessories), about 300 offers in PLN. The demo scenario "20 MacBooks, 30 Lenovo, 10 HP" has fixed offers (`DEMO_OFFERS`).
+- **Minimum prices are not in `metadata`,** because the Store API returns metadata publicly. They live in `minPriceFor()` in `seed-data.ts`.
+- **The storefront publishable key** is printed at the end of the seed log.
+- **Product images:** `bun scripts/product-images.ts` with the backend running (also after `--reset`). It downloads images from Wikimedia Commons to `packages/api/static/products/` (not in git) and attaches them to products.
+- **The admin panel dev server runs on :7010,** not :7000, because macOS AirPlay Receiver uses :7000.
 
-## Udostępnienie zespołowi (ngrok)
+## Sharing with the team (ngrok)
 
 ```bash
-cd marketplace/packages/api && bun run dev   # sam backend
-./scripts/share-marketplace.sh               # tunele (backend + storefront, jeśli chodzi na :3000), build paneli, linki
-./scripts/share-marketplace.sh --stop        # koniec
+cd marketplace/packages/api && bun run dev   # backend only
+./scripts/share-marketplace.sh               # tunnels (backend + storefront if it runs on :3000), panel builds, links
+./scripts/share-marketplace.sh --stop        # stop
 ```
 
-Szczegóły, limity darmowego ngrok i pułapki: [`docs/share-ngrok.md`](docs/share-ngrok.md).
+Details, free ngrok limits and pitfalls: [`docs/share-ngrok.md`](docs/share-ngrok.md).
 
-## Co gdzie jest
+## What is where
 
-| Plik | Po co |
+| File | Purpose |
 |---|---|
-| `feature_list.json` | feature'y F00–F13: status, owner, zależności, evidence |
-| `progress.md` | stan na teraz, blok na każdy strumień |
-| `session-handoff.md` | checkpoint całego zespołu |
-| `harness/journal/` | historia pracy każdej osoby (`./scripts/log.sh`) |
-| `sessions/` | wyeksportowane sesje AI (wymóg organizatorów, instrukcja w `sessions/README.md`) |
-| `pitch/` | prezentacja: `index.html` (edytujesz), `pitch.pdf` (`./scripts/pitch-pdf.sh`) |
-| `scripts/status.sh` | stan zespołu w jednym widoku |
+| `feature_list.json` | features F00–F13: status, owner, dependencies, evidence |
+| `progress.md` | current state, one block per stream |
+| `session-handoff.md` | whole-team checkpoint |
+| `harness/journal/` | each person's work history (`./scripts/log.sh`) |
+| `sessions/` | exported AI coding sessions (organizers' requirement, instructions in `sessions/README.md`) |
+| `pitch/` | pitch deck: `index.html` (source), `pitch.pdf` (`./scripts/pitch-pdf.sh`) |
+| `scripts/status.sh` | team status in one view |
