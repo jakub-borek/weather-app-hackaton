@@ -125,3 +125,4 @@ Krok 8 jest ważny dla jury. Najwyżej punktowane jest to, że system „actuall
 ## Odrzucone pomysły (kontekst)
 
 - **Security / phishing:** agenci testujący pracowników, np. podmiana jednej cyfry w numerze konta w mailu do księgowej. Ryzyko reakcji „przecież to już robi X", bo istnieją gotowe narzędzia (np. Cyber Coach).
+- **Portal zakupowy po stronie kupującego** (rozmowa zespołu, 2026-11-05): zamockowany portal firmy kupującego, w którym procurement zakłada ticket z potrzebą wolnym tekstem („10 Maców, 20 HP, 30 laptopów, do 3000"). Ticket idzie webhookiem do bota zakupowego, bot szuka produktów i negocjuje na marketplace, a wynik wraca w tickecie. Zrezygnowaliśmy, bo to za dużo komplikacji: dochodzi osobna aplikacja, nie wiadomo było, kto akceptuje zakup (bot sam czy człowiek), i nie zmieściłoby się w 2–3 min demo. Wejściem dla kupującego zostaje „Zapytaj o ofertę" w storefroncie.
