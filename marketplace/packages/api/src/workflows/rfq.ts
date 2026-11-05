@@ -93,6 +93,70 @@ export const createRfqWorkflow = createWorkflow("rfq-create-workflow", function 
   return new WorkflowResponse(createRfqStep(input));
 });
 
+// --- RFQ z koszyka: kupujący wysyła koszyk z wiadomością (storefront) ---
+type CartRfqInput = { cart_id: string; message: string; max_rounds?: number };
+type CartItemRow = {
+  variant_id: string;
+  quantity: number;
+  unit_price: number;
+  product_title: string;
+  offer?: { seller_id?: string } | null;
+};
+
+const createRfqFromCartStep = createStep("rfq-from-cart", async (input: CartRfqInput, { container }) => {
+  const query = container.resolve(ContainerRegistrationKeys.QUERY);
+  const { data } = await query.graph({
+    entity: "cart",
+    fields: ["id", "items.variant_id", "items.quantity", "items.unit_price", "items.product_title", "items.offer.seller_id"],
+    filters: { id: input.cart_id },
+  });
+  const cartItems = (data[0]?.items ?? []) as CartItemRow[];
+  if (!cartItems.length) throw ruleError("INVALID_STATE", "Koszyk jest pusty");
+
+  // Cena z koszyka (oferta sprzedawcy) jest punktem wyjścia negocjacji i podstawą licznika oszczędności.
+  const items: RfqItem[] = cartItems.map((item) => ({
+    variant_id: item.variant_id,
+    product_title: item.product_title,
+    quantity: item.quantity,
+    list_unit_price: Number(item.unit_price),
+    seller_id: item.offer?.seller_id,
+  }));
+  const sellerIds = [...new Set(items.map((item) => item.seller_id).filter((id): id is string => !!id))];
+  if (!sellerIds.length) throw ruleError("INVALID_STATE", "Pozycje koszyka nie mają ofert sprzedawców");
+
+  const service = rfqService(container);
+  const acceptToken = randomBytes(16).toString("hex");
+  const rfq = await service.createRfqs({
+    need_text: input.message,
+    items: toJson(items),
+    max_rounds: input.max_rounds ?? 3,
+    accept_token: acceptToken,
+    cart_id: input.cart_id,
+    status: "negotiating",
+  });
+  const negotiations = await service.createRfqNegotiations(
+    sellerIds.map((seller_id) => ({ rfq_id: rfq.id, seller_id, status: "awaiting_seller" as const }))
+  );
+  await service.createRfqMessages(
+    negotiations.map((negotiation) => ({
+      negotiation_id: negotiation.id,
+      author: "buyer" as const,
+      kind: "note" as const,
+      lines: toJson(
+        items
+          .filter((item) => item.seller_id === negotiation.seller_id)
+          .map((item) => ({ variant_id: item.variant_id, quantity: item.quantity, unit_price: item.list_unit_price }))
+      ),
+      text: input.message,
+    }))
+  );
+  return new StepResponse({ rfq_id: rfq.id, accept_token: acceptToken });
+});
+
+export const createRfqFromCartWorkflow = createWorkflow("rfq-from-cart-workflow", function (input: CartRfqInput) {
+  return new WorkflowResponse(createRfqFromCartStep(input));
+});
+
 // --- Pozycje RFQ i rozesłanie do sprzedawców (agent kupującego) ---
 type SetItemsInput = { rfq_id: string; items: { variant_id: string; quantity: number; target_unit_price?: number }[] };
 type VariantRow = { id: string; product?: { title?: string; metadata?: Record<string, unknown> | null } };

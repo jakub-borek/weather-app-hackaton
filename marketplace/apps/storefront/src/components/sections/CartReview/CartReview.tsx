@@ -4,6 +4,7 @@ import { CartSummary } from '@/components/organisms/CartSummary/CartSummary';
 import { PromoCode } from '@/components/organisms/PromoCode/PromoCode';
 
 import { CartItems } from './CartItems';
+import { CartRfqRequest } from './CartRfqRequest';
 import PaymentButton from './PaymentButton';
 
 const Review = ({ cart }: { cart: any }) => {
@@ -45,6 +46,8 @@ const Review = ({ cart }: { cart: any }) => {
           discount_total={cart?.discount_total || 0}
         />
       </div>
+
+      {(cart?.items?.length ?? 0) > 0 && <CartRfqRequest />}
 
       {previousStepsCompleted && (
         <PaymentButton

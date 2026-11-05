@@ -140,11 +140,11 @@
         "flow klikalny od formularza do przycisku Akceptuj na prawdziwym API",
         "log negocjacji odświeża się bez przeładowania strony"
       ],
-      "owner": "",
-      "status": "not-started",
-      "started_at": "",
+      "owner": "piotrkukuc12",
+      "status": "in-progress",
+      "started_at": "2026-11-05 19:40",
       "done_at": "",
-      "evidence": ""
+      "evidence": "Koszyk z wiadomością: pole 'Negocjuj cenę' w /checkout (CartReview) -> POST /store/rfq-requests -> /pl/rfq/[id] z wątkami per sprzedawca (polling 1,5 s), licznikiem i akceptacją (accept_token w cookie httpOnly). API: koszyk iStacja+LaptoPol -> 2 wątki z wiadomością kupującego. Strona /pl/rfq/rfq_01M6PG3W9M2GW66HBF03N5JHXA zwraca 200 ze wszystkimi sekcjami. Nie klikane w przeglądarce."
     },
     {
       "id": "F08",

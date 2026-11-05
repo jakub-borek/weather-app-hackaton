@@ -12,6 +12,8 @@ export type RfqItem = {
   quantity: number;
   list_unit_price: number;
   target_unit_price?: number;
+  // Ustawione, gdy RFQ powstało z koszyka: pozycja należy do tego sprzedawcy.
+  seller_id?: string;
 };
 export type RfqLine = { variant_id: string; quantity: number; unit_price: number };
 export type SellerPricing = {
@@ -197,7 +199,7 @@ export async function loadVendorNegotiations(container: MedusaContainer, sellerI
         status: negotiation.status,
         round: negotiation.round,
         requested: items
-          .filter((item) => pricing.has(item.variant_id))
+          .filter((item) => (item.seller_id ? item.seller_id === sellerId : pricing.has(item.variant_id)))
           .map(({ variant_id, product_title, quantity }) => ({ variant_id, product_title, quantity })),
         pricing: [...pricing.values()],
         messages: sortedMessages(negotiation as unknown as NegotiationRow),

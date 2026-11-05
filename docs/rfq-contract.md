@@ -70,6 +70,7 @@ Ruch nie w swojej kolejce kończy się błędem `NOT_YOUR_TURN`.
 | Metoda i ścieżka | Kto woła | Body / query | Odpowiedź |
 |---|---|---|---|
 | `POST /store/rfqs` | UI | `{ need_text, max_rounds? }` | `{ rfq, accept_token }` |
+| `POST /store/rfq-requests` | storefront (koszyk) | `{ cart_id, message, max_rounds? }` | `{ rfq, accept_token }`. RFQ od razu `negotiating`: wątek z każdym sprzedawcą z koszyka, pierwsza wiadomość autora `buyer` (człowiek) z jego pozycjami |
 | `GET /store/rfqs?status=draft` | agent kupującego | `status` | `{ rfqs: [rfq] }` |
 | `GET /store/rfqs/:id` | UI, agent kupującego | | `{ rfq }` z negocjacjami, wiadomościami i `summary` |
 | `POST /store/rfqs/:id/items` | agent kupującego | `{ items: [{ variant_id, quantity, target_unit_price? }] }` | `{ rfq }` (po rozesłaniu) |

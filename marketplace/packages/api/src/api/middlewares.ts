@@ -14,6 +14,13 @@ export const CreateRfqSchema = z.object({
 });
 export type CreateRfqBody = z.infer<typeof CreateRfqSchema>;
 
+export const CartRfqSchema = z.object({
+  cart_id: z.string().min(1),
+  message: z.string().min(1).max(2000),
+  max_rounds: z.number().int().min(1).max(6).optional(),
+});
+export type CartRfqBody = z.infer<typeof CartRfqSchema>;
+
 export const SetRfqItemsSchema = z.object({
   items: z
     .array(
@@ -51,6 +58,7 @@ export type AcceptRfqBody = z.infer<typeof AcceptRfqSchema>;
 export default defineMiddlewares({
   routes: [
     { matcher: "/store/rfqs", method: ["POST"], middlewares: [validateAndTransformBody(CreateRfqSchema)] },
+    { matcher: "/store/rfq-requests", method: ["POST"], middlewares: [validateAndTransformBody(CartRfqSchema)] },
     { matcher: "/store/rfqs/:id/items", method: ["POST"], middlewares: [validateAndTransformBody(SetRfqItemsSchema)] },
     { matcher: "/store/rfqs/:id/accept", method: ["POST"], middlewares: [validateAndTransformBody(AcceptRfqSchema)] },
     {

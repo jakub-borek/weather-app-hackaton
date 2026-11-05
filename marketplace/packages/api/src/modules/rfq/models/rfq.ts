@@ -10,6 +10,8 @@ export const Rfq = model.define("rfq", {
   items: model.json().nullable(),
   max_rounds: model.number().default(3),
   accept_token: model.text(),
+  // Koszyk, z którego kupujący wysłał zapytanie (POST /store/rfq-requests).
+  cart_id: model.text().nullable(),
   order_group_id: model.text().nullable(),
   negotiations: model.hasMany(() => RfqNegotiation, { mappedBy: "rfq" }),
 });
@@ -27,7 +29,8 @@ export const RfqNegotiation = model.define("rfq_negotiation", {
 
 export const RfqMessage = model.define("rfq_message", {
   id: model.id({ prefix: "rfqmsg" }).primaryKey(),
-  author: model.enum(["buyer_agent", "seller_agent", "system"]),
+  // buyer = człowiek (wiadomość wysłana z koszykiem), buyer_agent / seller_agent = agenci.
+  author: model.enum(["buyer", "buyer_agent", "seller_agent", "system"]),
   kind: model.enum(["offer", "counter", "final", "decline", "stop", "note"]),
   // [{ variant_id, quantity, unit_price }]
   lines: model.json().nullable(),
