@@ -24,7 +24,7 @@ const NEGOTIATION_STATUS: Record<string, string> = {
   rejected: 'Odrzucona'
 };
 const KIND: Record<string, string> = {
-  note: 'Zapytanie',
+  note: 'Wiadomość',
   offer: 'Oferta',
   counter: 'Kontroferta',
   final: 'Oferta końcowa',
@@ -53,14 +53,26 @@ function MessageBubble({ message, sellerName, titles }: { message: RfqMessage; s
             {pln.format(line.quantity * line.unit_price)}
           </p>
         ))}
+        {message.valid_until && (
+          <p className="mt-1 text-xs opacity-70">
+            {isExpired(message)
+              ? 'Oferta wygasła'
+              : `Ważna do ${new Date(message.valid_until).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })}`}
+          </p>
+        )}
       </div>
     </div>
   );
 }
 
-const canAccept = (negotiation: RfqNegotiation) =>
-  ['final', 'awaiting_buyer'].includes(negotiation.status) &&
-  negotiation.messages.some((message) => message.author === 'seller_agent' && message.lines.length > 0);
+const isExpired = (message: RfqMessage) => !!message.valid_until && new Date(message.valid_until).getTime() < Date.now();
+
+// Akceptować można ostatnią, jeszcze ważną ofertę sprzedawcy.
+const canAccept = (negotiation: RfqNegotiation) => {
+  const offers = negotiation.messages.filter((message) => message.author === 'seller_agent' && message.lines.length > 0);
+  const latest = offers[offers.length - 1];
+  return ['final', 'awaiting_buyer'].includes(negotiation.status) && !!latest && !isExpired(latest);
+};
 
 function Thread({
   negotiation,

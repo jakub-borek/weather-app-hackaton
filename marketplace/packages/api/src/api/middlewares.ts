@@ -35,14 +35,14 @@ export const SetRfqItemsSchema = z.object({
 export type SetRfqItemsBody = z.infer<typeof SetRfqItemsSchema>;
 
 export const BuyerMessageSchema = z.object({
-  kind: z.enum(["counter", "stop"]),
+  kind: z.enum(["counter", "stop", "note"]),
   lines: z.array(LineSchema).default([]),
   text: z.string().max(2000).default(""),
 });
 export type BuyerMessageBody = z.infer<typeof BuyerMessageSchema>;
 
 export const SellerMessageSchema = z.object({
-  kind: z.enum(["offer", "counter", "final", "decline"]),
+  kind: z.enum(["offer", "counter", "final", "decline", "note"]),
   lines: z.array(LineSchema).default([]),
   text: z.string().max(2000).default(""),
 });

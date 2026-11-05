@@ -63,6 +63,10 @@ Wszystkie ceny w PLN, jednostki główne (4690 = 4690 zł), netto. Waluta zawsze
 
 Ruch nie w swojej kolejce kończy się błędem `NOT_YOUR_TURN`.
 
+**Wolny czat:** obie strony mogą w każdej chwili, dopóki negocjacja jest otwarta, wysłać `kind: "note"` z samym tekstem. Taka wiadomość nie zmienia kolejki ani rund i nie przechodzi przez reguły cenowe, bo nie jest ofertą. Agent może napisać, co chce, ale ofertą jest tylko wiadomość z `lines`, a tę sprawdza backend.
+
+**Ważność oferty:** każda oferta sprzedawcy (wiadomość z `lines`) ma w odpowiedzi `valid_until`, czyli czas wysłania plus `RFQ_OFFER_TTL_MINUTES` (domyślnie 30). Akceptacja przeterminowanej oferty kończy się błędem `OFFER_EXPIRED`.
+
 ## Endpointy
 
 ### Store API (nagłówek `x-publishable-api-key`, klucz z logu seeda)
@@ -96,6 +100,8 @@ Trasy w `src/api/vendor/*` przechodzą przez middleware sprzedawcy Mercura, któ
 | `NOT_YOUR_TURN` | wiadomość przy złym statusie negocjacji |
 | `NEGOTIATION_CLOSED` | negocjacja `final`, `declined`, `accepted` albo `rejected` |
 | `INVALID_ACCEPT_TOKEN` | akceptacja bez poprawnego `accept_token` |
+| `OFFER_EXPIRED` | akceptacja oferty po jej `valid_until` |
+| `EMPTY_MESSAGE` | wiadomość czatu (`note`) bez tekstu |
 
 Format błędu: `{ "code": "BELOW_MIN_PRICE", "message": "Cena 4100 < minimum dla tej oferty" }`. Agent sprzedawcy dostaje błąd jako wynik narzędzia i poprawia ofertę.
 

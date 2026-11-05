@@ -9,6 +9,7 @@ import {
   asItems,
   asLines,
   latestSellerLines,
+  latestSellerOffer,
   loadSellerPricing,
   rfqService,
   ruleError,
@@ -16,6 +17,29 @@ import {
   type RfqItem,
   type RfqLine,
 } from "../lib/rfq";
+
+// Wolny czat: wiadomość bez cen, nie zmienia kolejki ani rund. Działa, dopóki negocjacja jest otwarta.
+async function postChatNote(
+  container: MedusaContainer,
+  negotiation: { id: string; status: string },
+  author: "buyer_agent" | "seller_agent",
+  text: string
+) {
+  if (CLOSED.includes(negotiation.status)) {
+    throw ruleError("NEGOTIATION_CLOSED", `Negocjacja jest zamknięta (${negotiation.status})`);
+  }
+  if (!text.trim()) {
+    throw ruleError("EMPTY_MESSAGE", "Wiadomość czatu nie może być pusta");
+  }
+  await rfqService(container).createRfqMessages({
+    negotiation_id: negotiation.id,
+    author,
+    kind: "note",
+    lines: toJson([]),
+    text,
+  });
+  return new StepResponse({ negotiation_id: negotiation.id, status: negotiation.status, kind: "note" });
+}
 
 const CLOSED = ["final", "declined", "accepted", "rejected"];
 const DEMO_BUYER = {
@@ -196,7 +220,7 @@ export const setRfqItemsWorkflow = createWorkflow("rfq-set-items-workflow", func
 });
 
 // --- Wiadomość sprzedawcy (agent sprzedawcy, vendor API) z regułami F04 ---
-type SellerKind = "offer" | "counter" | "final" | "decline";
+type SellerKind = "offer" | "counter" | "final" | "decline" | "note";
 type SellerMessageInput = { negotiation_id: string; seller_id: string; kind: SellerKind; lines: RfqLine[]; text: string };
 
 async function assertSellerRules(container: MedusaContainer, sellerId: string, lines: RfqLine[], items: RfqItem[]) {
@@ -217,6 +241,9 @@ async function assertSellerRules(container: MedusaContainer, sellerId: string, l
 const postSellerMessageStep = createStep("rfq-seller-message", async (input: SellerMessageInput, { container }) => {
   const { negotiation, rfq, items } = await loadNegotiation(container, input.negotiation_id);
   if (negotiation.seller_id !== input.seller_id) throw ruleError("NOT_FOUND", `Nie ma negocjacji ${input.negotiation_id}`);
+  if (input.kind === "note") {
+    return postChatNote(container, negotiation, "seller_agent", input.text);
+  }
   assertTurn(negotiation.status, "awaiting_seller");
   if (input.kind !== "decline") {
     await assertSellerRules(container, input.seller_id, input.lines, items);
@@ -243,10 +270,13 @@ export const postSellerMessageWorkflow = createWorkflow("rfq-seller-message-work
 });
 
 // --- Wiadomość kupującego (agent kupującego, store API) ---
-type BuyerMessageInput = { negotiation_id: string; kind: "counter" | "stop"; lines: RfqLine[]; text: string };
+type BuyerMessageInput = { negotiation_id: string; kind: "counter" | "stop" | "note"; lines: RfqLine[]; text: string };
 
 const postBuyerMessageStep = createStep("rfq-buyer-message", async (input: BuyerMessageInput, { container }) => {
   const { negotiation, rfq, items } = await loadNegotiation(container, input.negotiation_id);
+  if (input.kind === "note") {
+    return postChatNote(container, negotiation, "buyer_agent", input.text);
+  }
   assertTurn(negotiation.status, "awaiting_buyer");
   if (input.kind === "counter") {
     assertKnownVariants(input.lines, items);
@@ -286,6 +316,14 @@ const acceptRfqStep = createStep("rfq-accept", async (input: AcceptInput, { cont
   const notReady = chosen.find((n) => !["final", "awaiting_buyer"].includes(n.status) || !latestSellerLines(n).length);
   if (chosen.length !== input.negotiation_ids.length || notReady) {
     throw ruleError("INVALID_STATE", "Można zaakceptować tylko negocjacje z ofertą sprzedawcy");
+  }
+  const now = Date.now();
+  const expired = chosen.find((n) => {
+    const validUntil = latestSellerOffer(n)?.valid_until;
+    return !validUntil || new Date(validUntil).getTime() < now;
+  });
+  if (expired) {
+    throw ruleError("OFFER_EXPIRED", `Oferta w negocjacji ${expired.id} wygasła. Poproś sprzedawcę o nową`);
   }
 
   const items = asItems(rfq.items);

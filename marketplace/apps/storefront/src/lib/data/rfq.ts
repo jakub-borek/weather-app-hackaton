@@ -15,7 +15,16 @@ const HEADERS = {
 const tokenCookie = (rfqId: string) => `_rfq_token_${rfqId}`;
 
 export type RfqLine = { variant_id: string; quantity: number; unit_price: number };
-export type RfqMessage = { id: string; author: string; kind: string; lines: RfqLine[]; text: string | null; created_at: string };
+export type RfqMessage = {
+  id: string;
+  author: string;
+  kind: string;
+  lines: RfqLine[];
+  text: string | null;
+  created_at: string;
+  // Tylko oferty sprzedawcy (wiadomości z cenami). Po tym czasie oferty nie da się zaakceptować.
+  valid_until: string | null;
+};
 export type RfqNegotiation = {
   id: string;
   seller: { id: string; name: string };

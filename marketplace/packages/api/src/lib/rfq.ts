@@ -33,7 +33,14 @@ export type RuleCode =
   | "NEGOTIATION_CLOSED"
   | "INVALID_ACCEPT_TOKEN"
   | "INVALID_STATE"
+  | "OFFER_EXPIRED"
+  | "EMPTY_MESSAGE"
   | "NOT_FOUND";
+
+// Ważność oferty sprzedawcy: czas wysłania + TTL. Bez osobnej kolumny, bez migracji.
+export const OFFER_TTL_MINUTES = Number(process.env.RFQ_OFFER_TTL_MINUTES ?? 30);
+export const offerValidUntil = (createdAt: Date | string): Date =>
+  new Date(new Date(createdAt).getTime() + OFFER_TTL_MINUTES * 60_000);
 
 // Kod reguły jedzie w treści błędu, bo workflow gubi własne pola błędów. Trasa go odczytuje.
 export const ruleError = (code: RuleCode, message: string): Error => new Error(`${code}: ${message}`);
@@ -123,17 +130,25 @@ type NegotiationRow = { id: string; seller_id: string; status: string; round: nu
 
 const lineTotal = (lines: RfqLine[]): number => lines.reduce((sum, line) => sum + line.quantity * line.unit_price, 0);
 
+const isSellerOffer = (message: { author: string; lines: RfqLine[] }): boolean =>
+  message.author === "seller_agent" && message.lines.length > 0;
+
 const sortedMessages = (negotiation: NegotiationRow) =>
   [...(negotiation.messages ?? [])]
     .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-    .map((message) => ({ ...message, lines: asLines(message.lines) }));
+    .map((message) => {
+      const lines = asLines(message.lines);
+      const offer = isSellerOffer({ author: message.author, lines });
+      return { ...message, lines, valid_until: offer ? offerValidUntil(message.created_at).toISOString() : null };
+    });
 
-export const latestSellerLines = (negotiation: NegotiationRow): RfqLine[] => {
-  const offers = sortedMessages(negotiation).filter(
-    (message) => message.author === "seller_agent" && message.lines.length > 0
-  );
-  return offers.length ? offers[offers.length - 1].lines : [];
+// Ostatnia oferta sprzedawcy (wiadomość z cenami). Wiadomości czatu (note) bez cen są pomijane.
+export const latestSellerOffer = (negotiation: NegotiationRow) => {
+  const offers = sortedMessages(negotiation).filter(isSellerOffer);
+  return offers.length ? offers[offers.length - 1] : null;
 };
+
+export const latestSellerLines = (negotiation: NegotiationRow): RfqLine[] => latestSellerOffer(negotiation)?.lines ?? [];
 
 async function sellerNames(container: MedusaContainer, ids: string[]): Promise<Map<string, string>> {
   if (!ids.length) return new Map();
