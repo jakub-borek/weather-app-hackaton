@@ -160,6 +160,50 @@ ale nie jest jedyną ochroną.
 - **Własna tabela wiadomości zamiast bloku `messaging` Mercura:** daje strukturalne ceny, których potrzebują guardrails.
 - **Podział pracy:** strumienie S1–S4 w `feature_list.json` (platforma, backend RFQ, agenci, storefront i demo).
 - **Zasady hackathonu:** wolno używać open source, initial commit może być po prostu z gotowego projektu.
+- **RFQ na wzorcu Quote Management z Medusy** (2026-11-05). Z poradnika bierzemy wzorzec modułu, tras i walidacji jako kroków workflowu. Nie bierzemy UI panelu admina, Order Edits ani zamiany draft orderu w zamówienie: zamówienie robi F08 przez koszyk Mercura. Szczegóły w sekcji „Baza techniczna RFQ".
+
+## Baza techniczna RFQ: Quote Management z Medusy
+
+> Źródło: poradnik [Implement Quote Management in Medusa](https://docs.medusajs.com/resources/examples/guides/quote-management) dla Medusy 2.22.3 (tej samej wersji co u nas), kod w [medusajs/examples/quotes-management](https://github.com/medusajs/examples/tree/main/quotes-management), pełniejsza wersja w [B2B starterze](https://github.com/medusajs/b2b-starter-medusa). Lokalna kopia poradnika: `docs/medusa-quote-management.md`. Pobrane 2026-11-05.
+
+Ani Medusa, ani Mercur 2.4.1 nie mają gotowego RFQ. W dokumentacji Mercura (`llms.txt`) i w `@mercurjs/core` nie ma nic o quotes. Medusa daje przepis: własny moduł, workflowy i endpointy, które dokładamy w `marketplace/packages/api`.
+
+### Jak to działa w Medusie
+
+1. Klient z koszykiem woła `POST /store/customers/me/quotes` z `cart_id`. Workflow `createRequestForQuoteWorkflow` robi z koszyka draft order (`createOrderWorkflow` z `is_draft_order: true`), otwiera na nim edycję (`beginOrderEditOrderWorkflow`, czyli order change) i zapisuje `Quote`.
+2. Sprzedawca w panelu admina zmienia ceny i ilości przez Order Edits API (`updateOriginalItem`, potem `request`). Potem odsyła ofertę (`POST /admin/quotes/:id/send`, status `pending_customer`) albo ją odrzuca.
+3. Klient ogląda podgląd zamówienia (`GET /store/customers/me/quotes/:id/preview`, `previewOrderChange`) i akceptuje albo odrzuca.
+4. Akceptacja (`customerAcceptQuoteWorkflow`) sprawdza status `pending_customer`, ustawia `accepted`, zatwierdza edycję (`confirmOrderEditRequestWorkflow`) i zamienia draft w zwykłe zamówienie (`updateOrderWorkflow`: `status: pending`, `is_draft_order: false`).
+
+Model `Quote` ma pola `id`, `status`, `customer_id`, `cart_id`, `draft_order_id`, `order_change_id`. Statusy: `pending_merchant` → `pending_customer` → `accepted`, albo `merchant_rejected` / `customer_rejected`. Powiązania z koszykiem, klientem, zamówieniem i order change to linki tylko do odczytu (`defineLink` z `readOnly: true`). B2B starter dokłada model `Message` (`text`, `item_id`, `admin_id`, `customer_id`), czyli wątek wiadomości przy ofercie.
+
+### Co bierzemy
+
+Nazwy encji, statusy i endpointy są w kontrakcie `docs/rfq-contract.md` (F00). Tabela pokazuje, który element poradnika im odpowiada.
+
+| Medusa | U nas (kontrakt F00) | Feature |
+|---|---|---|
+| moduł `quote`: model, serwis z `MedusaService`, ID innych modułów jako zwykłe pola | moduł `rfq` w `packages/api/src/modules/rfq`, `seller_id` jako tekst | F03 |
+| jeden `Quote` = jeden klient i jeden sklep | jedno `rfq` od kupującego i `rfq_negotiation` dla każdego sprzedawcy, do którego trafiło | F03, F09 |
+| `Message` z B2B startera | `rfq_message`, czyli log negocjacji (`offer`, `counter`, `final`, `decline`, `stop`) | F06, F07 |
+| statusy `pending_merchant` / `pending_customer` | `awaiting_seller` / `awaiting_buyer`, potem `final` i decyzja człowieka | F00 |
+| kroki `validateQuoteNotAccepted`, `validateQuoteCanAcceptStep` | guardrails jako kroki workflowu: `BELOW_MIN_PRICE`, `NOT_YOUR_TURN`, `NEGOTIATION_CLOSED` | F04 |
+| akceptacja w trasie z sesją klienta (`/store/customers/me/quotes/:id/accept`) | `POST /store/rfqs/:id/accept` z `accept_token`, który ma tylko UI, a agent nie | F04 |
+| `customerAcceptQuoteWorkflow` | tylko kształt: akceptacja zmienia statusy (`accepted` / `rejected`) i tworzy zamówienia. Samo zamówienie robi `createNegotiatedOrder()` (niżej) | F08 |
+
+### Czego nie bierzemy (bo 2,5 h)
+
+- **UI w panelu admina** (kroki 7, 9–11 i 15 poradnika). Ofertę wystawia agent sprzedawcy przez API, a sprzedawca widzi gotowe zamówienie w swoim panelu.
+- **Draft order, Order Edits i zamiana draftu w zamówienie** (kroki 4, 12, 14 i 15 poradnika). Agenci negocjują na liczbach w module `rfq`, a zamówienie powstaje dopiero przy akceptacji, przez koszyk Mercura (niżej).
+- **Koszyk jako wejście RFQ.** RFQ powstaje z formularza „Zapytaj o ofertę" (produkty i ilości). Koszyk składa dopiero backend przy akceptacji.
+
+### Zamówienie po akceptacji: koszyk Mercura, nie draft order (F08, F09)
+
+Draft order z poradnika omija podział koszyka w Mercurze. Takie zamówienie nie ma sprzedawcy i może się nie pokazać w panelu sprzedawcy, a to jest `done_when` F08. Dlatego F08 robi zamówienie przez zwykły koszyk Mercura:
+
+- `createNegotiatedOrder()` w `marketplace/packages/api/src/lib/create-negotiated-order.ts` (commit `8a73a99`) zakłada koszyk i dodaje pozycje przez `addToCartWorkflow` z wynegocjowaną `unit_price` po stronie serwera (pozycja dostaje `is_custom_price`). Potem dodaje wysyłkę dla każdego sprzedawcy i płatność systemową `pp_system_default`, a na końcu uruchamia `completeCartWithSplitOrdersWorkflow` Mercura.
+- Wynik: grupa zamówień (`order_group`) z osobnym zamówieniem dla każdego sprzedawcy, wynegocjowane ceny zachowane, link zamówienie ↔ sprzedawca założony przez Mercura. To od razu pokrywa zamówienie dzielone z F09.
+- Store API odrzuca `unit_price` w `POST /store/carts/:id/line-items`, choć dokumentacja Mercura mówi inaczej. Cenę ustawia więc tylko backend, nigdy UI ani agent.
 
 ## Scenariusz demo (2–3 min)
 
