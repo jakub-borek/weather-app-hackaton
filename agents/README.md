@@ -27,14 +27,18 @@ Bot loguje się jednym wywołaniem i w odpowiedzi dostaje token oraz manifest: b
 | `POST /agents/login` `{ email, password, role }` | bot | `buyer` = konto klienta, `seller` = członek sklepu (zwraca też `seller_id`). Odpowiedź: `token` + manifest |
 | `POST /agents/rfqs` `{ need_text, max_rounds?, items? }` | bot kupującego (Bearer) | tworzy RFQ i od razu je rozsyła. **Bot nie dostaje `accept_token`**, token trafia do `metadata.rfq_accept_tokens[rfq_id]` klienta-właściciela |
 
-Konto bota kupującego (klient z `metadata.agent = true` i `owner_email`):
+Konta botów zakłada seed (część `./scripts/setup-marketplace.sh`, idempotentny):
+
+| Bot | Login | Hasło | `role` |
+|---|---|---|---|
+| Negocjator (kupujący) | `negocjator@example.com` | `supersecret` | `buyer` |
+| sprzedawcy | `techhurt@` / `laptopol@` / `istacja@example.com` | `supersecret` | `seller` |
 
 ```bash
-bun agents/create-bot-account.ts <email> <hasło> [email_właściciela]   # domyślny właściciel: zakupy@firma-demo.pl
-API_URL=https://<tunel>.ngrok-free.app bun agents/create-bot-account.ts ...   # na wspólnym backendzie
+cd marketplace/packages/api && bun run seed:agents   # sam seed botów, np. na już postawionej bazie
 ```
 
-Boty sprzedawców logują się kontami sklepów z seeda (`role: "seller"`), nic nie trzeba zakładać.
+Bot kupującego to klient z `metadata.agent = true` i `owner_email = zakupy@firma-demo.pl`. Dodatkowy bot bez dostępu do bazy, przez API: `API_URL=https://<tunel> bun agents/create-bot-account.ts <email> <hasło> [email_właściciela]`.
 
 Test:
 

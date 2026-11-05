@@ -32,6 +32,8 @@ echo "=== Migracje ==="
 bunx medusa db:migrate
 echo "=== Seed: elektronika, sprzedawcy, oferty ==="
 bun run seed
+echo "=== Seed: konta Grok Botów (negocjator@example.com / supersecret) ==="
+bun run seed:agents
 echo "=== Admin: admin@example.com / supersecret ==="
 bunx medusa user -e admin@example.com -p supersecret || echo "Admin już istnieje, pomijam."
 
