@@ -1,5 +1,7 @@
 # Product: marketplace z negocjacją ofert przez agentów (RFQ)
 
+> **Pitch deck:** [`pitch/pitch.pdf`](pitch/pitch.pdf) (5 slajdów, wersja interaktywna: [`pitch/index.html`](pitch/index.html)).
+
 > Nazwa robocza: do ustalenia.
 > Źródło: rozmowa zespołu z jurorem na hackathonie, 2026-11-05. Czas na build: ok. 2,5 h.
 > Punkty oznaczone **(wniosek)** nie padły wprost w rozmowie. Wynikają z kryteriów jurora albo z obaw zespołu.
