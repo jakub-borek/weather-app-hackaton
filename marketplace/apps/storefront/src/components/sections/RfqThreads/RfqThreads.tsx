@@ -114,17 +114,26 @@ export function RfqThreads({ initial }: { initial: Rfq }) {
   const [accepting, setAccepting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const open = rfq.status !== 'accepted' && rfq.status !== 'cancelled';
+
+  // Polling tylko dla otwartego RFQ i widocznej karty (tunel ngrok ma limit requestów).
   useEffect(() => {
-    const timer = setInterval(() => {
+    if (!open) return;
+    const refresh = () => {
+      if (document.hidden) return;
       getRfq(rfq.id)
         .then(setRfq)
         .catch(() => undefined);
-    }, POLL_MS);
-    return () => clearInterval(timer);
-  }, [rfq.id]);
+    };
+    const timer = setInterval(refresh, POLL_MS);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, [rfq.id, open]);
 
   const titles = useMemo(() => new Map(rfq.items.map((item) => [item.variant_id, item.product_title])), [rfq.items]);
-  const open = rfq.status !== 'accepted' && rfq.status !== 'cancelled';
   const toggle = (id: string) =>
     setSelected((current) => (current.includes(id) ? current.filter((value) => value !== id) : [...current, id]));
 
