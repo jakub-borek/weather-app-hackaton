@@ -51,7 +51,7 @@ export async function POST(req: AuthenticatedMedusaRequest<AgentRfqBody>, res: M
         acceptance: {
           by: "human",
           owner_email: ownerEmail,
-          note: "Nie akceptujesz. Raportuj człowiekowi id RFQ, on akceptuje w sklepie.",
+          note: "Raportuj klientowi oferty. Zamówienie (place_order) składasz dopiero po jego wyraźnej zgodzie w czacie albo klient akceptuje sam w sklepie.",
         },
       };
     },

@@ -135,7 +135,7 @@ nie piszą do siebie bezpośrednio: wszystko idzie przez backend, który pilnuje
 Wszystkie zasady poniżej egzekwuje backend (kody błędów w `docs/rfq-contract.md`). Prompt agenta może je powtarzać,
 ale nie jest jedyną ochroną.
 
-- Agent nigdy nie akceptuje oferty. Akceptacja wymaga `accept_token` (`INVALID_ACCEPT_TOKEN`), który leży na koncie klienta. Klucz agenta działa tylko na `/agents/*`, więc bot go nie odczyta. Akceptuje zalogowany człowiek w sklepie.
+- Agent sam nie decyduje o zakupie. `accept_token` (`INVALID_ACCEPT_TOKEN`) leży na koncie klienta, a klucz agenta działa tylko na `/agents/*`, więc bot go nie odczyta. Klient akceptuje sam w sklepie albo daje zgodę w czacie z botem. Wtedy bot składa zamówienie przez `POST /agents/rfqs/:id/order`: backend bierze token z konta klienta, pozwala zamówić tylko RFQ tego klienta i tylko raz (`NOT_FOUND`, `INVALID_STATE`), a słowa zgody trafiają do logu negocjacji. Samej zgody backend nie sprawdzi, tę jedną regułę trzyma prompt.
 - Agent sprzedawcy oferuje tylko to, co ma w inventory (`OVER_STOCK`, `UNKNOWN_VARIANT`).
 - Agent sprzedawcy nie schodzi poniżej ceny minimalnej (`BELOW_MIN_PRICE`). W rozmowie padła obawa, że bota łatwo „rozpykać".
 - Negocjacja ma limit rund (`max_rounds`, domyślnie 3) i ustaloną kolejność ruchów (`NOT_YOUR_TURN`, `NEGOTIATION_CLOSED`), żeby boty się nie zapętliły.

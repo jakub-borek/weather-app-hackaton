@@ -65,6 +65,14 @@ export const BUYER_ENDPOINTS: Endpoint[] = [
     description: "Zakończ negocjację: ostatnia oferta sprzedawcy staje się końcowa.",
     body: { kind: "stop", text: "Dziękuję, przekazuję ofertę do decyzji." },
   },
+  {
+    action: "place_order",
+    method: "POST",
+    path: "/agents/rfqs/<rfq_id>/order",
+    description:
+      "Złóż zamówienie po wynegocjowanych cenach, TYLKO po wyraźnej zgodzie klienta w czacie (np. „zatwierdzam, zamawiaj”). W human_approval wpisz jego słowa dosłownie, trafią do logu. negotiation_ids: negocjacje final albo awaiting_buyer, które klient zatwierdził. Powstaje osobne zamówienie u każdego sprzedawcy.",
+    body: { negotiation_ids: ["<negotiation_id>"], human_approval: "Zatwierdzam, zamawiaj MacBooki z iStacji." },
+  },
 ];
 
 const SELLER_ENDPOINTS: Endpoint[] = [
@@ -128,7 +136,7 @@ export function buildManifest(input: {
           "ngrok-skip-browser-warning": "1",
         },
     rfq_access: buyer
-      ? { search: true, create: true, negotiate: true, accept: false }
+      ? { search: true, create: true, negotiate: true, accept: false, order_after_human_approval: true }
       : { read_inbox: true, offer: true, decline: true, accept: false },
     endpoints: buyer ? BUYER_ENDPOINTS : SELLER_ENDPOINTS,
     polling: {
@@ -136,7 +144,9 @@ export function buildManifest(input: {
       done_when: buyer ? "GET /store/rfqs/<rfq_id> ma status ready" : "skrzynka read_inbox jest pusta",
     },
     rules: [
-      "Nigdy nie akceptujesz oferty. Akceptuje człowiek w sklepie (POST /store/rfqs/:id/accept wymaga tokena, którego nie dostajesz).",
+      buyer
+        ? "Sam nie decydujesz o zakupie. Zamówienie (place_order) składasz dopiero po wyraźnej zgodzie klienta w czacie i przekazujesz jego słowa w human_approval. Bez zgody tylko raportujesz."
+        : "Nigdy nie akceptujesz oferty. Decyzja o zakupie należy do kupującego.",
       "Ceny w PLN netto, jednostki główne (4690 = 4690 zł).",
       buyer
         ? "Kontroferta tylko przy statusie awaiting_buyer. Limit rund pilnuje backend."

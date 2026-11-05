@@ -56,7 +56,7 @@ export function renderAgentDoc(input: DocInput): string {
 
 Działasz w imieniu klienta **${email}** na marketplace z laptopami i sprzętem IT (${apiUrl}).
 Twoje zadanie: znaleźć w katalogu to, czego potrzebuje klient, wysłać zapytanie ofertowe (RFQ) do sprzedawców
-i wynegocjować jak najlepsze ceny. **Nie akceptujesz ofert.** Akceptuje człowiek w sklepie.
+i wynegocjować jak najlepsze ceny. **Sam nie decydujesz o zakupie.** Zamówienie składasz dopiero po wyraźnej zgodzie klienta w czacie.
 
 ## Nagłówki do każdego żądania
 
@@ -83,8 +83,11 @@ export H4="ngrok-skip-browser-warning: 1"
    - \`note\`: zwykła wiadomość w czacie, nie zmienia kolejki.
 6. **Raportuj** klientowi, gdy RFQ ma status \`ready\`: najlepsza oferta per sprzedawca, oszczędność względem katalogu
    (\`summary\`) i link do akceptacji: ${storeUrl}/pl/rfq/<rfq_id> (klient musi być zalogowany jako ${email}).
+7. **Zamów po zgodzie**: gdy klient napisze w czacie wprost, że zatwierdza (np. „zatwierdzam, zamawiaj”), wywołaj
+   \`place_order\` z negocjacjami, które zatwierdził, a jego słowa wpisz dosłownie w \`human_approval\`.
+   Bez wyraźnej zgody nie zamawiasz. Klient może też zaakceptować sam w sklepie.
 
-Po akceptacji czat dalej działa (\`note\`), a negocjacja ma pole \`order\` z numerem zamówienia.
+Po zamówieniu czat dalej działa (\`note\`), a negocjacja ma pole \`order\` z numerem zamówienia.
 
 ${playbookTactics()}
 ## Endpointy
@@ -95,7 +98,7 @@ ${endpoints.map((endpoint) => section(endpoint, apiUrl)).join("\n\n")}
 
 ## Reguły
 
-- Nigdy nie akceptujesz oferty. \`POST /store/rfqs/:id/accept\` wymaga tokena, którego nie dostajesz.
+- Zamówienie (\`place_order\`) tylko po wyraźnej zgodzie klienta w czacie, z jego słowami w \`human_approval\`. \`POST /store/rfqs/:id/accept\` wymaga tokena, którego nie dostajesz.
 - Ceny w PLN netto, w jednostkach głównych (4690 = 4690 zł).
 - Kontroferta i stop tylko przy statusie \`awaiting_buyer\`. Limit rund pilnuje backend.
 - Sprzedawca nie zejdzie poniżej swojej ceny minimalnej. Backend odrzuci taką ofertę, więc nie przeciągaj negocjacji w nieskończoność.

@@ -71,6 +71,13 @@ export const AgentRfqSchema = CreateRfqSchema.extend({
 });
 export type AgentRfqBody = z.infer<typeof AgentRfqSchema>;
 
+// Zamówienie przez bota po zgodzie człowieka w czacie: human_approval = dosłowne słowa klienta (trafiają do logu).
+export const AgentOrderSchema = z.object({
+  negotiation_ids: z.array(z.string().min(1)).min(1),
+  human_approval: z.string().min(2).max(500),
+});
+export type AgentOrderBody = z.infer<typeof AgentOrderSchema>;
+
 export default defineMiddlewares({
   routes: [
     { matcher: "/store/rfqs", method: ["POST"], middlewares: [validateAndTransformBody(CreateRfqSchema)] },
@@ -91,6 +98,11 @@ export default defineMiddlewares({
     // Klucz agenta (x-agent-key z konta w sklepie) albo JWT z POST /agents/login.
     { matcher: "/agents/rfqs", method: ["POST"], middlewares: [agentAuth, validateAndTransformBody(AgentRfqSchema)] },
     { matcher: "/agents/rfqs", method: ["GET"], middlewares: [agentAuth] },
+    {
+      matcher: "/agents/rfqs/:id/order",
+      method: ["POST"],
+      middlewares: [agentAuth, validateAndTransformBody(AgentOrderSchema)],
+    },
     { matcher: "/store/agent-key", method: ["POST"], middlewares: [authenticate("customer", ["session", "bearer"])] },
   ],
 });
