@@ -52,8 +52,9 @@ if [ -n "$LEAKED" ]; then
 fi
 echo "OK brak .env w repo"
 
-# 4. Szybkie checki aplikacji: lint / typecheck / build. Uzupełnia właściciel F01 po postawieniu Mercura.
-# Przykład: QUICK_CHECKS=("cd apps/backend && npm run build" "cd apps/storefront && npm run lint")
+# 4. Szybkie checki aplikacji: lint / typecheck. Uzupełnia właściciel F01 po postawieniu Mercura.
+# Tryb hackathonu: całość do ok. minuty. Bez testów (jest, test:*), bez `medusa build`, bez docker build.
+# Przykład: QUICK_CHECKS=("cd marketplace/apps/storefront && bun run lint")
 QUICK_CHECKS=()
 if [ ${#QUICK_CHECKS[@]} -eq 0 ]; then
   echo "INFO: QUICK_CHECKS puste (uzupełnia właściciel F01)"

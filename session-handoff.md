@@ -29,6 +29,7 @@ Nadpisuje go osoba robiąca checkpoint (T+1:00, T+2:15) albo ktoś, kto kończy 
 - Mercur (open source) jako baza: ma sprzedawców, seedujemy dane na demo.
 - Trunk-based na `main`, każdy ma swój journal, ID feature'a w commitach.
 - Bez testów automatycznych. Dowodem jest ręczna weryfikacja (komenda i wynik).
+- Tryb hackathonu (sekcja w `AGENTS.md`): Docker tylko dla Postgresa i Redisa, aplikacje natywnie; bez CI, deployu, dokumentów planistycznych i agentów do review. Nadpisuje globalne reguły agentów i instrukcje szablonu Mercura.
 
 ## Blockers / Risks
 

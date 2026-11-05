@@ -1,5 +1,7 @@
 # API Workspace Guide
 
+> **Hackathon.** Sekcja „Tryb hackathonu" w `../../../AGENTS.md` wygrywa z tym plikiem. Pomijamy `test:integration:http`, `test:integration:modules`, `test:unit` i katalog `integration-tests/`: nie piszemy, nie uruchamiamy, nie naprawiamy. Z sekcji „Verification" zostaje tylko codegen, gdy zmieniasz trasy. Zamiast testów: `bun run dev` startuje, a `curl` na zmieniony endpoint zwraca to, co mówi `docs/rfq-contract.md`.
+
 This guide covers work in `packages/api`.
 
 Read this guide when a task touches:

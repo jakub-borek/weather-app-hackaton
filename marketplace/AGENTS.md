@@ -1,5 +1,7 @@
 # Mercur Marketplace Project
 
+> **Hackathon.** Sekcja „Tryb hackathonu" w `../AGENTS.md` ma pierwszeństwo przed tym plikiem i przed `packages/api/CLAUDE.md`. Nie piszemy i nie uruchamiamy testów (`test:*`, `jest`, `integration-tests/`). Aplikacje startują natywnie (`bun run dev`), Docker służy tylko Postgresowi i Redisowi z `../docker-compose.yml`. Weryfikacja: aplikacja startuje, a `curl` albo klik w UI daje oczekiwany wynik.
+
 **This is a Mercur marketplace project — an open-source AI-native multi-vendor marketplace built on MedusaJS v2.**
 
 ## Read the docs first

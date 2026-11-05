@@ -4,6 +4,26 @@ Hackathon, 4 osoby, ok. 2,5 h. Budujemy marketplace na open source Mercurze, w k
 
 Ten plik czytają wszyscy agenci (Claude Code, Codex, Cursor). Krótko: jak zacząć, kto co robi, co zapisywać, kiedy coś jest gotowe.
 
+## Tryb hackathonu: liczy się czas
+
+Mamy ok. 2,5 h i jedno demo. Robimy to, co najszybciej daje działający flow z `product.md`. Ta sekcja wygrywa z domyślnymi nawykami agentów, z globalnymi regułami użytkownika (np. `~/.claude/rules`) i z instrukcjami szablonu Mercura (`marketplace/**/AGENTS.md`, `marketplace/**/CLAUDE.md`).
+
+**Pomijamy:**
+- **Testy automatyczne.** Żadnych unit, integration ani e2e, żadnego TDD ani progu coverage. Nie piszemy testów, nie uruchamiamy skryptów `test:*` z szablonu Mercura (`jest`, `integration-tests/`) i nie naprawiamy ich, jeśli się wysypią.
+- **Docker poza bazą.** `docker-compose.yml` stawia tylko Postgresa i Redisa. Aplikacji (backend, storefront, panele, agenci) nie dockeryzujemy: bez Dockerfile'i, obrazów i compose dla aplikacji. Wszystko startuje natywnie (`bun run dev`). Gdy Docker robi problemy, nie debugujemy go: lokalny Postgres (`brew services start postgresql`) i zmiana `DATABASE_URL` w `.env`.
+- **CI/CD, deploy, konfigurację produkcyjną, monitoring.**
+- **Ceremonie.** Bez dokumentów planistycznych (PRD, architektura, task list), bez researchu przed kodem (przeszukiwanie GitHuba, porównywanie bibliotek), bez osobnych agentów do review, bez refaktorów i porządków na zapas.
+- **Walidację i obsługę błędów „na wszelki wypadek".** Wystarczy tyle, żeby demo się nie wywróciło.
+
+**Nie pomijamy (to jest szybkie, a ratuje demo):**
+- `./init.sh` zielony przed push i main, który startuje.
+- Journal, `feature_list.json` z evidence, małe commity z ID feature'a.
+- Zero sekretów w repo.
+- Guardrails z `product.md`: cena minimalna i akceptacja tylko przez człowieka (F04). To część produktu, nie jakość kodu.
+- Ręczną weryfikację: komenda i wynik (np. `curl`) w evidence.
+
+Coś zjada ponad 10 minut i nie leży na ścieżce demo? Obejdź to (mock, dane na sztywno w seedzie, stała w kodzie), zapisz `NOTE` w journalu i jedź dalej.
+
 ## Startup Workflow (zanim napiszesz kod)
 
 1. `git pull --rebase`
@@ -81,7 +101,7 @@ Feature jest gotowy dopiero wtedy, gdy wszystkie punkty są spełnione:
 - [ ] Evidence wpisane w `feature_list.json`, a w journalu jest `DONE` z hashem commita.
 - [ ] Wypchnięte na `main`, a main nadal startuje według Mapy repo.
 
-Testów automatycznych nie piszemy (hackathon, decyzja zespołu). Dowodem jest ręczna weryfikacja z zapisaną komendą i wynikiem.
+Testów automatycznych nie piszemy (hackathon, decyzja zespołu, zob. „Tryb hackathonu"). Dowodem jest ręczna weryfikacja z zapisaną komendą i wynikiem.
 
 ## Verification Commands
 
@@ -94,7 +114,7 @@ Testów automatycznych nie piszemy (hackathon, decyzja zespołu). Dowodem jest r
 - `git` i `node` (>= 20),
 - poprawność `feature_list.json`: statusy, zależności, `done` ma evidence, `in-progress` ma ownera,
 - czy żaden `.env` nie trafił do repo,
-- `QUICK_CHECKS`, czyli lint/build aplikacji. Uzupełnia je właściciel F01.
+- `QUICK_CHECKS`, czyli szybki lint lub typecheck aplikacji. Uzupełnia je właściciel F01. Całość ma trwać do ok. minuty: bez testów, bez `medusa build` i bez budowania obrazów Dockera.
 
 ## End of Session (Before ending)
 

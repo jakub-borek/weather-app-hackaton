@@ -1,6 +1,6 @@
 {
   "project": "Marketplace RFQ z negocjacją agentów (hackathon)",
-  "rules": "Edytuj tylko swoje wpisy. status: not-started | in-progress | blocked | done. Status done wymaga evidence, in-progress wymaga ownera. Sprawdza to ./init.sh.",
+  "rules": "Edytuj tylko swoje wpisy. status: not-started | in-progress | blocked | done. Status done wymaga evidence, in-progress wymaga ownera. Sprawdza to ./init.sh. Tryb hackathonu: bez testów automatycznych i bez Dockera poza bazą, evidence to ręczna weryfikacja (komenda i wynik).",
   "streams": {
     "S1": "Platforma: Mercur, seed, zamówienia",
     "S2": "Backend RFQ: kontrakt, moduł RFQ, guardrails, MCP",
