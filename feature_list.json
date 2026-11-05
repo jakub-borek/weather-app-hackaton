@@ -19,11 +19,11 @@
         "docs/rfq-contract.md jest na main",
         "S3 i S4 potwierdzili kontrakt wpisem NOTE w journalu"
       ],
-      "owner": "",
-      "status": "not-started",
-      "started_at": "",
+      "owner": "piotrkukuc12",
+      "status": "in-progress",
+      "started_at": "2026-11-05 19:20",
       "done_at": "",
-      "evidence": ""
+      "evidence": "Szkic docs/rfq-contract.md na main. Czeka na potwierdzenie S3 i S4."
     },
     {
       "id": "F01",
