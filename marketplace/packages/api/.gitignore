@@ -24,3 +24,5 @@ build
 !.yarn/versions
 
 .medusa
+# pliki z file-local i scripts/product-images.ts (ściągane, nie w repo)
+/static
