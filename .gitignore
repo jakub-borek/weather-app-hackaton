@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+.medusa/
+.next/
+*.log
+.DS_Store
+
+.env
+.env.*
+!.env.example
+!.env.template
+
+.claude/settings.local.json
+.worktrees/

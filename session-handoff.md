@@ -22,7 +22,7 @@ Nadpisuje go osoba robiąca checkpoint (T+1:00, T+2:15) albo ktoś, kto kończy 
 ## Files Changed
 
 - `product.md`, `AGENTS.md`, `CLAUDE.md`, `feature_list.json`, `progress.md`, `session-handoff.md`, `init.sh`
-- `scripts/status.sh`, `scripts/log.sh`, `harness/journal/`, `harness/sessions/`, `.claude/settings.json`, `.gitignore`, `README.md`
+- `scripts/status.sh`, `scripts/log.sh`, `harness/journal/`, `harness/sessions/`, `.gitignore`, `README.md`
 
 ## Decisions Made
 
