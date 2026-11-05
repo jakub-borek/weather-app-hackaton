@@ -49,6 +49,7 @@ import {
   type DemoOffer,
   type SellerConfig,
 } from "./seed-data";
+import { seedPriceRules } from "./seed-price-rules";
 
 const ALL_SELLERS = [...SELLERS, ...DEMO_SELLERS];
 
@@ -447,7 +448,7 @@ type OfferInput = {
 };
 
 // metadata oferty jest publiczne (/store/offers), więc trafia tu tylko cena katalogowa.
-// Cena minimalna i rabaty: minPriceFor() i DEMO_OFFERS w seed-data.ts.
+// Cena minimalna i rabaty: tabela seller_price_rule (seed-price-rules.ts, wartości z seed-data.ts).
 function toOffer({ item, variant, seller, shippingProfileId, price, stock }: OfferInput): CreateOfferDTO {
   const sku = `${sellerHandle(seller.config).toUpperCase()}-${variant.sku ?? variant.id}`;
   return {
@@ -540,6 +541,14 @@ async function seedCatalogAndOffers(
   return { products: products.length, offers: offers.length };
 }
 
+// Dolne limity negocjacji dla każdej oferty (tabela seller_price_rule w module RFQ).
+async function logPriceRules(container: MedusaContainer): Promise<void> {
+  const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
+  logger.info("Seed: ceny minimalne ofert (reguły cenowe sprzedawców)...");
+  const { created, total } = await seedPriceRules(container);
+  logger.info(`Reguły cenowe: ${created} nowych, ofert w bazie ${total}.`);
+}
+
 export default async function seedElectronicsMarketplace({ container }: ExecArgs): Promise<void> {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
 
@@ -551,6 +560,7 @@ export default async function seedElectronicsMarketplace({ container }: ExecArgs
 
   if (await sellersAlreadySeeded(container)) {
     logger.info("Sprzedawcy już są w bazie, pomijam sprzedawców, produkty i oferty. Pełny reset: docker compose down -v.");
+    await logPriceRules(container);
     logger.info(`Publishable API key (storefront): ${publishableKey}`);
     return;
   }
@@ -564,6 +574,7 @@ export default async function seedElectronicsMarketplace({ container }: ExecArgs
   logger.info("Seed: kategorie, atrybuty, produkty, oferty...");
   const counts = await seedCatalogAndOffers(container, sellers, shippingProfileId);
 
+  await logPriceRules(container);
   logger.info(`Gotowe: ${sellers.length} sprzedawców, ${counts.products} produktów, ${counts.offers} ofert.`);
   logger.info(`Publishable API key (storefront): ${publishableKey}`);
   logger.info(`Panel sprzedawcy: http://localhost:9000/seller, np. ${SELLERS[0].email} / ${SELLER_PASSWORD}`);

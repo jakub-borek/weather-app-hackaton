@@ -40,8 +40,7 @@ Scenariusz „20 MacBooków, 30 Lenovo, 10 HP":
 ## Cena minimalna: gdzie jest i gdzie nie może być
 
 - **Nie w `metadata`.** Mercur 2.4.1 zwraca `metadata` oferty w `/store/offers` i `metadata` sprzedawcy w `/store/sellers` domyślnie (`packages/core/src/api/store/{offers,sellers}/query-config.ts` w `mercurjs/mercur`). Każdy, także agent kupującego, zobaczyłby cenę minimalną.
-- **Teraz:** w kodzie serwera, `seed-data.ts`: `DEMO_OFFERS` (min_price, volume_discounts) i `minPriceFor(sellerHandle, productTitle, offerPrice)`. Żaden endpoint sklepu tego nie zwraca.
-- **Docelowo (F00/F03):** tabela w module RFQ, np. `SellerPriceRule` per `offer_id` (`min_unit_price`, `volume_discounts`). Zasilenie z `DEMO_OFFERS`/`minPriceFor()`. Guardrail F04 czyta stąd, nie z promptu.
+- **Teraz:** tabela `seller_price_rule` w module RFQ, jeden wiersz na `offer_id` (`min_unit_price`, `volume_discounts`). Zasila ją `bun run seed` (i osobno `bun run seed:price-rules`, idempotentnie) z `DEMO_OFFERS`/`minPriceFor()` w `seed-data.ts`. Guardrail F04 i `pricing` w Vendor API czytają stąd, nie z promptu. Żaden endpoint sklepu tego nie zwraca.
 
 W `metadata` zostaje tylko to, co publiczne: `list_price_pln` (oferta) oraz `city` i `categories` (sprzedawca).
 

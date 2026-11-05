@@ -85,7 +85,23 @@ const availableStock = (offer: OfferRow): number =>
     .flatMap((link) => link.inventory_item?.location_levels ?? [])
     .reduce((sum, level) => sum + Number(level.stocked_quantity ?? 0) - Number(level.reserved_quantity ?? 0), 0);
 
-// Prywatne ceny sprzedawcy dla pozycji RFQ. Cena minimalna i rabaty z seed-data.ts (później SellerPriceRule).
+type PriceRule = { min_unit_price: number; volume_discounts: VolumeDiscount[] | null };
+
+async function loadPriceRules(container: MedusaContainer, offerIds: string[]): Promise<Map<string, PriceRule>> {
+  if (!offerIds.length) return new Map();
+  const rules = await rfqService(container).listSellerPriceRules({ offer_id: offerIds }, { take: null });
+  return new Map(
+    rules.map((rule) => [
+      rule.offer_id,
+      {
+        min_unit_price: Number(rule.min_unit_price),
+        volume_discounts: Array.isArray(rule.volume_discounts) ? (rule.volume_discounts as VolumeDiscount[]) : null,
+      },
+    ])
+  );
+}
+
+// Prywatne ceny sprzedawcy dla pozycji RFQ. Cena minimalna i rabaty z tabeli seller_price_rule.
 export async function loadSellerPricing(
   container: MedusaContainer,
   sellerId: string,
@@ -106,19 +122,24 @@ export async function loadSellerPricing(
     ],
     filters: { seller_id: sellerId, variant_id: items.map((item) => item.variant_id) },
   });
+  const offers = data as OfferRow[];
+  const rules = await loadPriceRules(container, offers.map((offer) => offer.id));
   const titleByVariant = new Map(items.map((item) => [item.variant_id, item.product_title]));
   return new Map(
-    (data as OfferRow[]).map((offer) => {
+    offers.map((offer) => {
       const handle = (offer.seller?.email ?? "").split("@")[0];
       const title = titleByVariant.get(offer.variant_id) ?? "";
       const unitPrice = Number(offer.prices?.find((price) => price.currency_code === "pln")?.amount ?? 0);
+      const rule = rules.get(offer.id);
       const pricing: SellerPricing = {
         offer_id: offer.id,
         variant_id: offer.variant_id,
         unit_price: unitPrice,
-        min_unit_price: minPriceFor(handle, title, unitPrice),
+        // Dolny limit z bazy (seller_price_rule). Brak reguły (oferta dodana po seedzie): wyliczenie z seed-data.ts.
+        min_unit_price: rule?.min_unit_price ?? minPriceFor(handle, title, unitPrice),
         stock: availableStock(offer),
-        volume_discounts: DEMO_OFFERS[title]?.find((demo) => demo.seller === handle)?.volume_discounts ?? [],
+        volume_discounts:
+          rule?.volume_discounts ?? DEMO_OFFERS[title]?.find((demo) => demo.seller === handle)?.volume_discounts ?? [],
       };
       return [offer.variant_id, pricing];
     })

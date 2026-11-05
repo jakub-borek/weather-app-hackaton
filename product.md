@@ -97,7 +97,7 @@ nie piszą do siebie bezpośrednio: wszystko idzie przez backend, który pilnuje
 | Moduł `rfq` | zapytanie, negocjacja per sprzedawca, wiadomości ze strukturalnymi cenami | Mercur nie ma pojęcia zapytania ani oferty | F03 |
 | Rozesłanie | negocjacja tylko dla sprzedawców, którzy mają ofertę na dany wariant | skala: jedno zapytanie do wielu sprzedawców | F03 |
 | Guardrails | walidacja każdej wiadomości agenta, 422 z kodem przy złamaniu reguły | agent może napisać cokolwiek, ale niezgodna oferta nie powstanie | F04 |
-| Reguły cenowe | cena minimalna (`minPriceFor()` w seedzie, później `SellerPriceRule`), prywatne `pricing` tylko w Vendor API | to dane sprzedawcy, nie wiedza modelu; kupujący ich nie widzi | F02, F04 |
+| Reguły cenowe | cena minimalna per oferta w tabeli `seller_price_rule` (moduł RFQ, zasilana seedem), prywatne `pricing` tylko w Vendor API | to dane sprzedawcy, nie wiedza modelu; kupujący ich nie widzi | F02, F04 |
 | `accept_token` | akceptacja tylko z UI, agent go nigdy nie dostaje | agent fizycznie nie może zaakceptować | F03 |
 | `createNegotiatedOrder` | zamówienia po wynegocjowanych cenach, podzielone per sprzedawca | Store API odrzuca `unit_price`, więc ceny nie nadpisze ani UI, ani agent | F08 |
 | Agenci | skrypty Bun: polling co 2 s + model z function calling, narzędzia to wywołania HTTP | najmniej ważna część, wymienna | F05, F06 |
@@ -121,7 +121,7 @@ nie piszą do siebie bezpośrednio: wszystko idzie przez backend, który pilnuje
 - Jedno RFQ rozesłane naraz do wszystkich pasujących sprzedawców + porównanie ofert.
 - Zamówienie dzielone: Maki od sprzedawcy A, Lenovo od B. **(wniosek)**
 - Licznik wartości: cena katalogowa vs wynegocjowana, czas vs ręczne pisanie do N sklepów. **(wniosek)**
-- Reguły cenowe w tabeli `SellerPriceRule` zamiast `minPriceFor()` w seedzie, edytowalne w panelu sprzedawcy.
+- Reguły cenowe (`seller_price_rule`) edytowalne w panelu sprzedawcy. Tabela już jest, brakuje UI.
 
 ### Could (jeśli zostanie czas)
 
@@ -227,7 +227,7 @@ Pitch w jednym zdaniu: „Każdy agent może podłączyć się do naszego market
 ## Otwarte pytania
 
 - **Runtime agentów:** w transkrypcie pada „grok" / „krokbot" / „globy". Decyzja S3 w journalu. Nie blokuje backendu, bo agent jest wymienny; wymóg to function calling ze skryptu Bun.
-- **Reguły cenowe:** przejście z `minPriceFor()` w seedzie na tabelę `SellerPriceRule`? Rabat za wolumen i maksymalny rabat: czy wchodzą na demo?
+- **Reguły cenowe:** ~~przejście z `minPriceFor()` na tabelę~~ zrobione (`seller_price_rule`). Rabat za wolumen i maksymalny rabat: czy wchodzą na demo?
 - **Autoryzacja agenta kupującego:** Store API jest publiczne, więc każdy z kluczem może pisać jako kupujący. Na demo akceptujemy, w pitchu mówimy, że docelowo to token kupującego.
 - **MCP (F13):** czy zdążymy wystawić te same endpointy jako MCP server? Mocny argument „podłącz dowolnego agenta".
 - **Konkurencja na sali:** inny zespół też myśli o B2B. Juror ma sprawdzić, czy się nie dublujemy.

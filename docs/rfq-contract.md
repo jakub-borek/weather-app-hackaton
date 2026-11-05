@@ -94,7 +94,7 @@ Trasy w `src/api/vendor/*` przechodzą przez middleware sprzedawcy Mercura, któ
 
 | Kod 422 | Kiedy |
 |---|---|
-| `BELOW_MIN_PRICE` | `unit_price` sprzedawcy < cena minimalna (`minPriceFor()` z `src/scripts/seed-data.ts`, później tabela `SellerPriceRule`) |
+| `BELOW_MIN_PRICE` | `unit_price` sprzedawcy < cena minimalna oferty (`min_unit_price` z tabeli `seller_price_rule` w module RFQ, seed: `bun run seed:price-rules`) |
 | `OVER_STOCK` | `quantity` > stan sprzedawcy dla wariantu |
 | `UNKNOWN_VARIANT` | wariant spoza RFQ albo bez oferty tego sprzedawcy |
 | `NOT_YOUR_TURN` | wiadomość przy złym statusie negocjacji |

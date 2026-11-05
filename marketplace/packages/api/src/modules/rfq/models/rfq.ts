@@ -37,3 +37,22 @@ export const RfqMessage = model.define("rfq_message", {
   text: model.text().nullable(),
   negotiation: model.belongsTo(() => RfqNegotiation, { mappedBy: "messages" }),
 });
+
+// Prywatna reguła cenowa sprzedawcy dla jednej oferty (F04): dolny limit negocjacji i rabaty wolumenowe.
+// Osobna tabela, bo metadata oferty jest publiczne (/store/offers). Czyta ją tylko backend i Vendor API
+// sprzedawcy (pole pricing). Zasilenie: seed (seedPriceRules w src/scripts/seed-price-rules.ts).
+export const SellerPriceRule = model
+  .define("seller_price_rule", {
+    id: model.id({ prefix: "spr" }).primaryKey(),
+    offer_id: model.text(),
+    seller_id: model.text(),
+    variant_id: model.text(),
+    // Najniższa cena jednostkowa (PLN), na jaką sprzedawca może zejść. Niżej backend zwraca 422 BELOW_MIN_PRICE.
+    min_unit_price: model.number(),
+    // [{ min_quantity, discount_pct }]
+    volume_discounts: model.json().nullable(),
+  })
+  .indexes([
+    { on: ["offer_id"], unique: true },
+    { on: ["seller_id", "variant_id"] },
+  ]);

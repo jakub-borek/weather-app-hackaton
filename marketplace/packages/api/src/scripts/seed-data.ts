@@ -217,7 +217,8 @@ export const DEMO_OFFERS: Record<string, DemoOffer[]> = {
 export const sellerHandle = (config: SellerConfig): string => config.email.split("@")[0];
 
 // PRYWATNE reguły cenowe. Nie zapisujemy ich w metadata oferty ani sprzedawcy, bo /store/offers
-// zwraca metadata publicznie (docs/seed-plan.md). Moduł RFQ (F03) bierze cenę minimalną stąd.
+// zwraca metadata publicznie (docs/seed-plan.md). Seed zapisuje je do tabeli seller_price_rule
+// (seed-price-rules.ts), a guardrail F04 czyta je z bazy. Tu tylko wartości startowe.
 export function minPriceFor(seller: string, productTitle: string, offerPrice: number): number {
   const demo = DEMO_OFFERS[productTitle]?.find((offer) => offer.seller === seller);
   if (demo) {
