@@ -1,0 +1,247 @@
+{
+  "project": "Marketplace RFQ z negocjacją agentów (hackathon)",
+  "rules": "Edytuj tylko swoje wpisy. status: not-started | in-progress | blocked | done. Status done wymaga evidence, in-progress wymaga ownera. Sprawdza to ./init.sh.",
+  "streams": {
+    "S1": "Platforma: Mercur, seed, zamówienia",
+    "S2": "Backend RFQ: kontrakt, moduł RFQ, guardrails, MCP",
+    "S3": "Agenci: kupujący i sprzedawcy",
+    "S4": "Storefront i demo"
+  },
+  "features": [
+    {
+      "id": "F00",
+      "name": "Kontrakt RFQ",
+      "stream": "S2",
+      "priority": "must",
+      "description": "Plik docs/rfq-contract.md: encje (RFQ, oferta, wiadomość negocjacji), statusy, endpointy dla storefrontu, agentów i paneli, przykładowe payloady. Odblokowuje S3 i S4, którzy mogą pracować na mocku.",
+      "dependencies": [],
+      "done_when": [
+        "docs/rfq-contract.md jest na main",
+        "S3 i S4 potwierdzili kontrakt wpisem NOTE w journalu"
+      ],
+      "owner": "",
+      "status": "not-started",
+      "started_at": "",
+      "done_at": "",
+      "evidence": ""
+    },
+    {
+      "id": "F01",
+      "name": "Mercur lokalnie",
+      "stream": "S1",
+      "priority": "must",
+      "description": "Postawić open source Mercur: backend, storefront, panel admina i panel sprzedawcy. Uzupełnić QUICK_CHECKS w init.sh i sekcję Mapa repo w AGENTS.md.",
+      "dependencies": [],
+      "done_when": [
+        "backend, storefront i oba panele startują lokalnie według Mapy repo",
+        "QUICK_CHECKS w init.sh uzupełnione i zielone",
+        "Mapa repo w AGENTS.md uzupełniona"
+      ],
+      "owner": "",
+      "status": "not-started",
+      "started_at": "",
+      "done_at": "",
+      "evidence": ""
+    },
+    {
+      "id": "F02",
+      "name": "Seed sprzedawców i laptopów",
+      "stream": "S1",
+      "priority": "must",
+      "description": "2-3 sprzedawców z laptopami (MacBook, Lenovo, HP): ceny katalogowe, stany magazynowe, cena minimalna na produkt. Seed uruchamiany jedną komendą.",
+      "dependencies": ["F01"],
+      "done_when": [
+        "jedna komenda seeduje czystą bazę",
+        "każdy sprzedawca widzi swoje produkty w panelu sprzedawcy",
+        "cena minimalna zapisana tam, gdzie mówi kontrakt F00"
+      ],
+      "owner": "",
+      "status": "not-started",
+      "started_at": "",
+      "done_at": "",
+      "evidence": ""
+    },
+    {
+      "id": "F03",
+      "name": "Moduł RFQ w backendzie",
+      "stream": "S2",
+      "priority": "must",
+      "description": "Implementacja kontraktu F00: tworzenie RFQ, rozesłanie do sprzedawców z pasującym asortymentem, oferty i kontroferty, log wiadomości negocjacji.",
+      "dependencies": ["F00", "F01"],
+      "done_when": [
+        "endpointy z kontraktu odpowiadają (curl i odpowiedź w evidence)",
+        "RFQ trafia tylko do sprzedawców, którzy mają dane produkty"
+      ],
+      "owner": "",
+      "status": "not-started",
+      "started_at": "",
+      "done_at": "",
+      "evidence": ""
+    },
+    {
+      "id": "F04",
+      "name": "Guardrails negocjacji",
+      "stream": "S2",
+      "priority": "must",
+      "description": "Pilnowane w backendzie, nie w promptach: oferta nie schodzi poniżej ceny minimalnej, tylko produkty z inventory sprzedawcy, limit rund, agent nie może zaakceptować oferty.",
+      "dependencies": ["F03"],
+      "done_when": [
+        "API odrzuca ofertę poniżej ceny minimalnej (curl w evidence)",
+        "akceptacja możliwa tylko przez kupującego-człowieka, nie przez agenta"
+      ],
+      "owner": "",
+      "status": "not-started",
+      "started_at": "",
+      "done_at": "",
+      "evidence": ""
+    },
+    {
+      "id": "F05",
+      "name": "Agent sprzedawcy",
+      "stream": "S3",
+      "priority": "must",
+      "description": "Jeden agent na sprzedawcę: dowiaduje się o nowym RFQ, sprawdza swoje inventory i ceny, odpowiada ofertą i kontrofertami przez API. Na start może działać na mocku kontraktu.",
+      "dependencies": ["F00"],
+      "done_when": [
+        "agent odpowiada na RFQ ofertą przez prawdziwe API z F03",
+        "runtime agentów i sposób nasłuchiwania zapisane jako DECYZJA w journalu"
+      ],
+      "owner": "",
+      "status": "not-started",
+      "started_at": "",
+      "done_at": "",
+      "evidence": ""
+    },
+    {
+      "id": "F06",
+      "name": "Agent kupującego",
+      "stream": "S3",
+      "priority": "must",
+      "description": "Zamienia potrzebę (np. '20 MacBooków, 30 Lenovo, 10 HP') na RFQ, negocjuje z agentami sprzedawców w limicie rund, zostawia oferty końcowe i rekomendację. Nigdy nie akceptuje.",
+      "dependencies": ["F00"],
+      "done_when": [
+        "pełna negocjacja z co najmniej 2 sprzedawcami kończy się ofertami końcowymi",
+        "log negocjacji zapisany w backendzie"
+      ],
+      "owner": "",
+      "status": "not-started",
+      "started_at": "",
+      "done_at": "",
+      "evidence": ""
+    },
+    {
+      "id": "F07",
+      "name": "Storefront: Zapytaj o ofertę",
+      "stream": "S4",
+      "priority": "must",
+      "description": "Przycisk lub formularz 'Zapytaj o ofertę', widok RFQ z logiem negocjacji na żywo, porównanie ofert, przycisk Akceptuj. Na start na mocku kontraktu.",
+      "dependencies": ["F00", "F01"],
+      "done_when": [
+        "flow klikalny od formularza do przycisku Akceptuj na prawdziwym API",
+        "log negocjacji odświeża się bez przeładowania strony"
+      ],
+      "owner": "",
+      "status": "not-started",
+      "started_at": "",
+      "done_at": "",
+      "evidence": ""
+    },
+    {
+      "id": "F08",
+      "name": "Akceptacja tworzy zamówienie",
+      "stream": "S1",
+      "priority": "must",
+      "description": "Po akceptacji przez człowieka w Mercurze powstaje zamówienie po wynegocjowanej cenie u właściwego sprzedawcy.",
+      "dependencies": ["F02", "F03"],
+      "done_when": [
+        "zamówienie z wynegocjowaną ceną widoczne w panelu admina i w panelu sprzedawcy"
+      ],
+      "owner": "",
+      "status": "not-started",
+      "started_at": "",
+      "done_at": "",
+      "evidence": ""
+    },
+    {
+      "id": "F09",
+      "name": "Wielu sprzedawców i zamówienie dzielone",
+      "stream": "S2",
+      "priority": "should",
+      "description": "Jedno RFQ do wszystkich pasujących sprzedawców, porównanie ofert, różne pozycje od różnych sprzedawców w jednej akceptacji.",
+      "dependencies": ["F03", "F06", "F08"],
+      "done_when": [
+        "jedna akceptacja tworzy zamówienia u 2 sprzedawców"
+      ],
+      "owner": "",
+      "status": "not-started",
+      "started_at": "",
+      "done_at": "",
+      "evidence": ""
+    },
+    {
+      "id": "F10",
+      "name": "Licznik oszczędności",
+      "stream": "S4",
+      "priority": "should",
+      "description": "Cena katalogowa vs wynegocjowana (zł i %) oraz czas vs ręczne pisanie do N sklepów.",
+      "dependencies": ["F07"],
+      "done_when": [
+        "licznik widoczny na ekranie porównania ofert"
+      ],
+      "owner": "",
+      "status": "not-started",
+      "started_at": "",
+      "done_at": "",
+      "evidence": ""
+    },
+    {
+      "id": "F11",
+      "name": "Demo i eksport sesji",
+      "stream": "S4",
+      "priority": "must",
+      "description": "Skrypt demo 2-3 min według product.md, próba generalna na czystym seedzie, sesje agentów wyeksportowane do harness/sessions/.",
+      "dependencies": ["F05", "F06", "F07", "F08"],
+      "done_when": [
+        "demo przeszło raz od początku do końca bez ręcznych poprawek",
+        "każda osoba ma co najmniej 1 sesję w harness/sessions/"
+      ],
+      "owner": "",
+      "status": "not-started",
+      "started_at": "",
+      "done_at": "",
+      "evidence": ""
+    },
+    {
+      "id": "F12",
+      "name": "Łowca okazji (Pepper)",
+      "stream": "S3",
+      "priority": "could",
+      "description": "Cron + alert (np. na Pepperze): agent wyłapuje nową ofertę, sprawdza, czy jest prawdziwa, i negocjuje, zanim powiadomi człowieka.",
+      "dependencies": ["F06"],
+      "done_when": [
+        "alert z crona uruchamia negocjację bez udziału człowieka"
+      ],
+      "owner": "",
+      "status": "not-started",
+      "started_at": "",
+      "done_at": "",
+      "evidence": ""
+    },
+    {
+      "id": "F13",
+      "name": "Backend RFQ przez MCP",
+      "stream": "S2",
+      "priority": "could",
+      "description": "Wystawić endpointy RFQ jako narzędzia MCP, żeby agenci rozmawiali z backendem bez frontu.",
+      "dependencies": ["F03"],
+      "done_when": [
+        "agent przeprowadza negocjację przez MCP zamiast HTTP"
+      ],
+      "owner": "",
+      "status": "not-started",
+      "started_at": "",
+      "done_at": "",
+      "evidence": ""
+    }
+  ]
+}
