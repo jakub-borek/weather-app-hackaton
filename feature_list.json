@@ -106,9 +106,9 @@
         "agent odpowiada na RFQ ofertą przez prawdziwe API z F03",
         "runtime agentów i sposób nasłuchiwania zapisane jako DECYZJA w journalu"
       ],
-      "owner": "",
-      "status": "not-started",
-      "started_at": "",
+      "owner": "jakub",
+      "status": "in-progress",
+      "started_at": "2026-11-05T19:21",
       "done_at": "",
       "evidence": ""
     },

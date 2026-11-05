@@ -40,7 +40,7 @@ Jeśli `./init.sh` jest czerwony, najpierw go napraw albo zgłoś BLOKER. Nie do
 |---|---|---|---|
 | S1 Platforma | Mercur, seed, zamówienia | F01, F02, F08 | — |
 | S2 Backend RFQ | kontrakt, moduł RFQ, guardrails, MCP | F00, F03, F04, F09, F13 | — |
-| S3 Agenci | agent kupującego i agenci sprzedawców | F05, F06, F12 | — |
+| S3 Agenci | agent kupującego i agenci sprzedawców | F05, F06, F12 | Jakub |
 | S4 Storefront i demo | UI RFQ, porównanie ofert, licznik, demo | F07, F10, F11 | — |
 
 Wpisz swoje imię w kolumnie „Kto" przy pierwszym commicie.

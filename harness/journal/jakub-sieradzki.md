@@ -1,0 +1,4 @@
+# Journal: Jakub Sieradzki
+
+- 2026-11-05 19:22 [START] F05: zaczynam interfejs, przez który Grok boty (sprzedawców i kupujących) łączą się z Mercurem. Moduł RFQ (F03) robi S2, więc RFQ na mocku do czasu kontraktu F00 _(main@a36a928)_
+- 2026-11-05 19:22 [DECYZJA] F05: interfejs dla botów = osobny serwer MCP (agents/, Streamable HTTP + stdio), nie kod w backendzie Mercura. Każdy bot dostaje klucz -> tożsamość (sprzedawca X przez vendor API z jego tokenem albo kupujący). Powód: Grok Build CLI i xAI API (remote MCP) umieją MCP, boty z różnych kont nie rozmawiają bezpośrednio, więc kanałem jest nasz backend. Narzędzie akceptacji oferty w ogóle nie istnieje. Odrzucone: Medusa MCP (tylko Cloud i tylko odczyt), webhook seller.created (sprzedawcy z seeda), MCP jako route w Mercurze (kod S2, blokowałoby równoległą pracę) _(main@a36a928)_
