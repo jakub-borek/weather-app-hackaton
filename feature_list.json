@@ -123,9 +123,9 @@
         "pełna negocjacja z co najmniej 2 sprzedawcami kończy się ofertami końcowymi",
         "log negocjacji zapisany w backendzie"
       ],
-      "owner": "",
-      "status": "not-started",
-      "started_at": "",
+      "owner": "jkurylak",
+      "status": "in-progress",
+      "started_at": "2026-11-05 19:45",
       "done_at": "",
       "evidence": ""
     },
