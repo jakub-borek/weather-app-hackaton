@@ -1,4 +1,4 @@
-import { defineMiddlewares, validateAndTransformBody } from "@medusajs/framework/http";
+import { authenticate, defineMiddlewares, validateAndTransformBody } from "@medusajs/framework/http";
 import { z } from "@medusajs/framework/zod";
 
 // --- RFQ (F03), kontrakt: docs/rfq-contract.md ---
@@ -55,6 +55,19 @@ export const AcceptRfqSchema = z.object({
 });
 export type AcceptRfqBody = z.infer<typeof AcceptRfqSchema>;
 
+// --- Dostęp dla botów (F05/F06): /agents/* ---
+export const AgentLoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+  role: z.enum(["buyer", "seller"]).default("buyer"),
+});
+export type AgentLoginBody = z.infer<typeof AgentLoginSchema>;
+
+export const AgentRfqSchema = CreateRfqSchema.extend({
+  items: SetRfqItemsSchema.shape.items.optional(),
+});
+export type AgentRfqBody = z.infer<typeof AgentRfqSchema>;
+
 export default defineMiddlewares({
   routes: [
     { matcher: "/store/rfqs", method: ["POST"], middlewares: [validateAndTransformBody(CreateRfqSchema)] },
@@ -70,6 +83,12 @@ export default defineMiddlewares({
       matcher: "/vendor/rfq-negotiations/:id/messages",
       method: ["POST"],
       middlewares: [validateAndTransformBody(SellerMessageSchema)],
+    },
+    { matcher: "/agents/login", method: ["POST"], middlewares: [validateAndTransformBody(AgentLoginSchema)] },
+    {
+      matcher: "/agents/rfqs",
+      method: ["POST"],
+      middlewares: [authenticate("customer", ["bearer"]), validateAndTransformBody(AgentRfqSchema)],
     },
   ],
 });

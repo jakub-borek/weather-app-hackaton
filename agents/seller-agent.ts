@@ -1,13 +1,28 @@
 // Agent sprzedawcy (F05). Jeden proces, osobna tożsamość i pętla dla każdego sklepu.
 // Użycie (z katalogu repo): bun agents/seller-agent.ts [istacja laptopol techhurt]
-// Bez XAI_API_KEY negocjuje regułą z lib/seller-strategy.ts. Cenę minimalną i tak pilnuje backend (F04).
+// Model: xAI API, gdy jest XAI_API_KEY; inaczej Grok Build CLI (`grok -p`, konto z subskrypcją), gdy jest polecenie grok;
+// inaczej reguła z lib/seller-strategy.ts. Cenę minimalną i tak pilnuje backend (F04).
 import { runWithTools, XAI_API_KEY, XAI_MODEL, type ChatMessage, type Tool } from "./lib/grok";
 import { loginSeller, vendorApi, type Line, type SellerKind, type SellerSession, type VendorNegotiation } from "./lib/mercur";
 import { kindForRound, ruleBasedMove } from "./lib/seller-strategy";
+import { findGrokBin, grokRuntime, type LlmRuntime } from "./poc-grok/llm";
 
 const POLL_MS = 2000;
 const MAX_ATTEMPTS = 3;
+const GROK_CLI_ATTEMPTS = 2;
 const DEMO_SELLERS = ["techhurt", "laptopol", "istacja"];
+const SELLER_KINDS: readonly SellerKind[] = ["offer", "counter", "final", "decline"];
+
+const grokCli: LlmRuntime<null> | null =
+  !XAI_API_KEY && findGrokBin() ? grokRuntime<null>({ model: process.env.GROK_MODEL, effort: process.env.GROK_EFFORT }) : null;
+const MODE = XAI_API_KEY ? `Grok API (${XAI_MODEL})` : grokCli ? grokCli.name : "reguła (brak XAI_API_KEY i polecenia grok)";
+
+// Tryb CLI nie ma function callingu: model zwraca ruch jako JSON, a skrypt wysyła go do backendu.
+const CLI_FORMAT = [
+  "W tym trybie nie masz narzędzi ani dostępu do plików i poleceń. Zamiast send_offer lub decline odpowiadasz wyłącznie jednym obiektem JSON:",
+  '{"reasoning":"1-3 zdania: dlaczego taki ruch (tylko do logu, kupujący tego nie widzi)","kind":"offer|counter|final|decline","lines":[{"variant_id":"...","quantity":1,"unit_price":1}],"text":"1-2 zdania po polsku do kupującego"}',
+  "Przy decline lines jest puste.",
+].join("\n");
 
 const toEmail = (handle: string) => (handle.includes("@") ? handle : `${handle}@example.com`);
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -95,6 +110,58 @@ async function moveWithGrok(session: SellerSession, negotiation: VendorNegotiati
   return runWithTools(messages, tools);
 }
 
+type CliMove = { reasoning: string; kind: SellerKind; lines: Line[]; text: string };
+
+// Model bywa gadatliwy albo owija JSON w markdown: bierzemy od pierwszej { do ostatniej }.
+function parseCliMove(raw: string): CliMove {
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  if (start < 0 || end <= start) throw new Error(`odpowiedź bez obiektu JSON: ${raw.slice(0, 120)}`);
+  const data = JSON.parse(raw.slice(start, end + 1)) as Record<string, unknown>;
+  const kind = SELLER_KINDS.find((candidate) => candidate === data.kind);
+  if (!kind) throw new Error(`kind musi być jednym z: ${SELLER_KINDS.join(", ")}`);
+  const lines = (Array.isArray(data.lines) ? data.lines : []).map((line: Record<string, unknown>) => ({
+    variant_id: String(line.variant_id ?? ""),
+    quantity: Number(line.quantity),
+    unit_price: Number(line.unit_price),
+  }));
+  return { reasoning: String(data.reasoning ?? ""), kind, lines, text: String(data.text ?? "") };
+}
+
+// Bezstanowo: każde wywołanie dostaje pełny stan negocjacji, a błąd backendu (np. BELOW_MIN_PRICE) wraca w kolejnym prompcie.
+async function moveWithGrokCli(cli: LlmRuntime<null>, session: SellerSession, negotiation: VendorNegotiation): Promise<boolean> {
+  const api = vendorApi(session);
+  const system = `${systemPrompt(session)}\n${CLI_FORMAT}`;
+  let feedback = "";
+  for (let attempt = 1; attempt <= GROK_CLI_ATTEMPTS; attempt++) {
+    const answer = await cli.ask({ role: "seller", system, prompt: `Negocjacja do obsłużenia:\n${negotiationBrief(negotiation)}${feedback}`, context: null });
+    let move: CliMove;
+    try {
+      move = parseCliMove(answer.text);
+    } catch (error) {
+      const why = error instanceof Error ? error.message : String(error);
+      log(session, `${negotiation.id}: niepoprawna odpowiedź Groka (${why})`);
+      feedback = `\n\nTwoja poprzednia odpowiedź była niepoprawna (${why}). Odpowiedz samym obiektem JSON.`;
+      continue;
+    }
+    const result = await api.send(negotiation.id, { kind: move.kind, lines: move.lines, text: move.text });
+    if (result.ok) {
+      log(session, `${negotiation.id} r${negotiation.round} ${move.kind} [grok cli, ${(answer.ms / 1000).toFixed(1)} s]: ${describe(move.lines)} | ${move.text}`);
+      log(session, `${negotiation.id} myśl agenta: ${move.reasoning}`);
+      return true;
+    }
+    log(session, `${negotiation.id} odrzucone przez backend: ${result.body.code} ${result.body.message ?? ""}`);
+    feedback = `\n\nBackend odrzucił twoją poprzednią odpowiedź: ${JSON.stringify(result.body)}. Popraw ofertę.`;
+  }
+  return false;
+}
+
+async function moveWithModel(session: SellerSession, negotiation: VendorNegotiation): Promise<boolean> {
+  if (XAI_API_KEY) return moveWithGrok(session, negotiation);
+  if (grokCli) return moveWithGrokCli(grokCli, session, negotiation);
+  return false;
+}
+
 async function moveWithRule(session: SellerSession, negotiation: VendorNegotiation): Promise<void> {
   const move = ruleBasedMove(negotiation);
   const result = await vendorApi(session).send(negotiation.id, move);
@@ -103,9 +170,9 @@ async function moveWithRule(session: SellerSession, negotiation: VendorNegotiati
 }
 
 async function handle(session: SellerSession, negotiation: VendorNegotiation): Promise<void> {
-  if (XAI_API_KEY) {
+  if (XAI_API_KEY || grokCli) {
     try {
-      if (await moveWithGrok(session, negotiation)) return;
+      if (await moveWithModel(session, negotiation)) return;
       log(session, `${negotiation.id}: Grok nie domknął ruchu, przechodzę na regułę`);
     } catch (error) {
       log(session, `${negotiation.id}: błąd Groka (${error instanceof Error ? error.message : error}), przechodzę na regułę`);
@@ -143,5 +210,5 @@ async function runSeller(handleOrEmail: string): Promise<void> {
 }
 
 const sellers = process.argv.slice(2).length ? process.argv.slice(2) : DEMO_SELLERS;
-console.log(`Agenci sprzedawców: ${sellers.join(", ")}. Tryb: ${XAI_API_KEY ? `Grok (${XAI_MODEL})` : "reguła (brak XAI_API_KEY)"}`);
+console.log(`Agenci sprzedawców: ${sellers.join(", ")}. Tryb: ${MODE}`);
 await Promise.all(sellers.map((seller) => runSeller(seller)));
