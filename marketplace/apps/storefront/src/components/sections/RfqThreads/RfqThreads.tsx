@@ -3,7 +3,76 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/atoms/Button/Button';
-import { acceptRfq, getRfq, type Rfq, type RfqMessage, type RfqNegotiation } from '@/lib/data/rfq';
+import { acceptRfq, getRfq, sendBuyerMessage, type Rfq, type RfqMessage, type RfqNegotiation } from '@/lib/data/rfq';
+
+const CLOSED = ['final', 'declined', 'accepted', 'rejected'];
+
+const latestSellerOffer = (negotiation: RfqNegotiation) =>
+  [...negotiation.messages].reverse().find((message) => message.author === 'seller_agent' && message.lines.length > 0);
+
+// Odpowiedź kupującego w wątku: wiadomość zawsze, kontroferta i koniec negocjacji w jego kolejce.
+function BuyerReply({ negotiation, titles, onSent }: { negotiation: RfqNegotiation; titles: Map<string, string>; onSent: () => void }) {
+  const offer = latestSellerOffer(negotiation);
+  const myTurn = negotiation.status === 'awaiting_buyer' && !!offer;
+  const [text, setText] = useState('');
+  const [prices, setPrices] = useState<Record<string, number>>({});
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const send = async (kind: 'note' | 'counter' | 'stop') => {
+    setSending(true);
+    setError(null);
+    const lines = (offer?.lines ?? []).map((line) => ({ ...line, unit_price: prices[line.variant_id] ?? line.unit_price }));
+    const result = await sendBuyerMessage(negotiation.id, kind, text.trim(), lines);
+    if (result.error) {
+      setError(result.error);
+    } else {
+      setText('');
+      onSent();
+    }
+    setSending(false);
+  };
+
+  return (
+    <div className="mt-3 flex flex-col gap-2 border-t pt-3">
+      {myTurn &&
+        offer?.lines.map((line) => (
+          <label key={line.variant_id} className="flex items-center justify-between gap-2 text-xs">
+            <span className="truncate">Twoja cena: {titles.get(line.variant_id) ?? line.variant_id}</span>
+            <input
+              type="number"
+              className="w-28 rounded-sm border px-2 py-1 text-sm"
+              value={prices[line.variant_id] ?? line.unit_price}
+              onChange={(event) => setPrices((current) => ({ ...current, [line.variant_id]: Number(event.target.value) }))}
+            />
+          </label>
+        ))}
+      <textarea
+        className="w-full rounded-sm border p-2 text-sm"
+        rows={2}
+        placeholder="Napisz do sprzedawcy…"
+        value={text}
+        onChange={(event) => setText(event.target.value)}
+      />
+      <div className="flex flex-wrap gap-2">
+        <Button variant="tonal" disabled={sending || !text.trim()} onClick={() => send('note')}>
+          Wyślij
+        </Button>
+        {myTurn && (
+          <>
+            <Button disabled={sending} onClick={() => send('counter')}>
+              Kontroferta
+            </Button>
+            <Button variant="text" disabled={sending} onClick={() => send('stop')}>
+              Zakończ negocjacje
+            </Button>
+          </>
+        )}
+      </div>
+      {error && <p className="text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
 
 const POLL_MS = 1500;
 const pln = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN', maximumFractionDigits: 0 });
@@ -79,13 +148,17 @@ function Thread({
   titles,
   selectable,
   selected,
-  onToggle
+  onToggle,
+  canReply,
+  onSent
 }: {
   negotiation: RfqNegotiation;
   titles: Map<string, string>;
   selectable: boolean;
   selected: boolean;
   onToggle: () => void;
+  canReply: boolean;
+  onSent: () => void;
 }) {
   const waiting =
     negotiation.status === 'awaiting_seller'
@@ -110,6 +183,9 @@ function Thread({
         ))}
         {waiting && <p className="animate-pulse text-xs text-gray-500">{waiting}</p>}
       </div>
+      {canReply && !CLOSED.includes(negotiation.status) && (
+        <BuyerReply negotiation={negotiation} titles={titles} onSent={onSent} />
+      )}
       {selectable && (
         <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm">
           <input type="checkbox" checked={selected} onChange={onToggle} />
@@ -197,6 +273,8 @@ export function RfqThreads({ initial }: { initial: Rfq }) {
             selectable={open && canAccept(negotiation)}
             selected={selected.includes(negotiation.id)}
             onToggle={() => toggle(negotiation.id)}
+            canReply={open}
+            onSent={() => getRfq(rfq.id).then(setRfq).catch(() => undefined)}
           />
         ))}
       </div>

@@ -35,6 +35,8 @@ export const SetRfqItemsSchema = z.object({
 export type SetRfqItemsBody = z.infer<typeof SetRfqItemsSchema>;
 
 export const BuyerMessageSchema = z.object({
+  // buyer = człowiek ze storefrontu, buyer_agent = agent kupującego (domyślnie).
+  author: z.enum(["buyer", "buyer_agent"]).default("buyer_agent"),
   kind: z.enum(["counter", "stop", "note"]),
   lines: z.array(LineSchema).default([]),
   text: z.string().max(2000).default(""),

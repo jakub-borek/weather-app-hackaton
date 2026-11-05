@@ -83,6 +83,24 @@ export async function getRfq(rfqId: string): Promise<Rfq> {
   return rfq;
 }
 
+// Kupujący (człowiek) pisze w wątku: wiadomość, kontroferta albo koniec negocjacji.
+export async function sendBuyerMessage(
+  negotiationId: string,
+  kind: 'note' | 'counter' | 'stop',
+  text: string,
+  lines: RfqLine[] = []
+): Promise<{ error?: string }> {
+  try {
+    await call(`/store/rfq-negotiations/${negotiationId}/messages`, {
+      method: 'POST',
+      body: { author: 'buyer', kind, text, lines: kind === 'counter' ? lines : [] }
+    });
+    return {};
+  } catch (error: unknown) {
+    return { error: error instanceof Error ? error.message : 'Nie udało się wysłać' };
+  }
+}
+
 export async function acceptRfq(rfqId: string, negotiationIds: string[]): Promise<{ error?: string; order_group_id?: string }> {
   const cookies = await nextCookies();
   const token = cookies.get(tokenCookie(rfqId))?.value;

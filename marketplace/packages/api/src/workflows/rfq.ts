@@ -22,7 +22,7 @@ import {
 async function postChatNote(
   container: MedusaContainer,
   negotiation: { id: string; status: string },
-  author: "buyer_agent" | "seller_agent",
+  author: "buyer" | "buyer_agent" | "seller_agent",
   text: string
 ) {
   if (CLOSED.includes(negotiation.status)) {
@@ -270,12 +270,19 @@ export const postSellerMessageWorkflow = createWorkflow("rfq-seller-message-work
 });
 
 // --- Wiadomość kupującego (agent kupującego, store API) ---
-type BuyerMessageInput = { negotiation_id: string; kind: "counter" | "stop" | "note"; lines: RfqLine[]; text: string };
+type BuyerMessageInput = {
+  negotiation_id: string;
+  author?: "buyer" | "buyer_agent";
+  kind: "counter" | "stop" | "note";
+  lines: RfqLine[];
+  text: string;
+};
 
 const postBuyerMessageStep = createStep("rfq-buyer-message", async (input: BuyerMessageInput, { container }) => {
   const { negotiation, rfq, items } = await loadNegotiation(container, input.negotiation_id);
+  const author = input.author ?? "buyer_agent";
   if (input.kind === "note") {
-    return postChatNote(container, negotiation, "buyer_agent", input.text);
+    return postChatNote(container, negotiation, author, input.text);
   }
   assertTurn(negotiation.status, "awaiting_buyer");
   if (input.kind === "counter") {
@@ -285,7 +292,7 @@ const postBuyerMessageStep = createStep("rfq-buyer-message", async (input: Buyer
   const service = rfqService(container);
   await service.createRfqMessages({
     negotiation_id: negotiation.id,
-    author: "buyer_agent",
+    author,
     kind: input.kind,
     lines: toJson(input.kind === "stop" ? [] : input.lines),
     text: input.text,
