@@ -5,7 +5,7 @@
 import { cookies as nextCookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { getCartId, removeCartId } from './cookies';
+import { getAuthHeaders, getCartId, removeCartId } from './cookies';
 
 const BACKEND = process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000';
 const HEADERS = {
@@ -103,11 +103,23 @@ export async function sendBuyerMessage(
   }
 }
 
+// Zapytania wysłane przez agenta (Grok Bot z kluczem z konta) mają token w metadata zalogowanego klienta.
+async function accountAcceptToken(rfqId: string): Promise<string | undefined> {
+  const auth = await getAuthHeaders();
+  if (!('authorization' in auth)) return undefined;
+  const response = await fetch(`${BACKEND}/store/customers/me?fields=metadata`, {
+    headers: { ...HEADERS, ...auth },
+    cache: 'no-store'
+  });
+  const body = await response.json().catch(() => ({}));
+  return body?.customer?.metadata?.rfq_accept_tokens?.[rfqId];
+}
+
 export async function acceptRfq(rfqId: string, negotiationIds: string[]): Promise<{ error?: string; order_group_id?: string }> {
   const cookies = await nextCookies();
-  const token = cookies.get(tokenCookie(rfqId))?.value;
+  const token = cookies.get(tokenCookie(rfqId))?.value ?? (await accountAcceptToken(rfqId));
   if (!token) {
-    return { error: 'Brak uprawnień do akceptacji tego zapytania w tej przeglądarce' };
+    return { error: 'Brak uprawnień: zaloguj się na konto, dla którego agent wysłał to zapytanie' };
   }
   try {
     const result = await call<{ order_group_id: string }>(`/store/rfqs/${rfqId}/accept`, {

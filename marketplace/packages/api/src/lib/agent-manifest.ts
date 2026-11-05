@@ -5,17 +5,19 @@ import { Modules } from "@medusajs/framework/utils";
 
 export type AgentRole = "buyer" | "seller";
 
-type Endpoint = { action: string; method: string; path: string; description: string; body?: unknown };
+export type Endpoint = { action: string; method: string; path: string; description: string; body?: unknown };
 
-const RULE_ERRORS = {
+export const RULE_ERRORS = {
   BELOW_MIN_PRICE: "oferta poniżej ceny minimalnej sprzedawcy",
   OVER_STOCK: "ilość większa niż stan sprzedawcy",
   UNKNOWN_VARIANT: "wariant spoza RFQ albo bez oferty sprzedawcy",
   NOT_YOUR_TURN: "teraz ruch drugiej strony, poczekaj i odczytaj stan",
   NEGOTIATION_CLOSED: "negocjacja zamknięta, pomiń ją",
+  OFFER_EXPIRED: "oferta sprzedawcy wygasła (valid_until), poproś o nową",
+  EMPTY_MESSAGE: "wiadomość note bez tekstu",
 };
 
-const BUYER_ENDPOINTS: Endpoint[] = [
+export const BUYER_ENDPOINTS: Endpoint[] = [
   {
     action: "search_products",
     method: "GET",

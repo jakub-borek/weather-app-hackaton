@@ -4,6 +4,7 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { MedusaContainer } from "@medusajs/framework/types";
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
+import { acceptTokensOf, storeAcceptToken } from "../../../lib/agent-key";
 import { loadRfqView } from "../../../lib/rfq";
 import { respond } from "../../../lib/rfq-http";
 import { createRfqWorkflow, setRfqItemsWorkflow } from "../../../workflows/rfq";
@@ -35,7 +36,13 @@ export async function POST(req: AuthenticatedMedusaRequest<AgentRfqBody>, res: M
     async () => {
       const { need_text, max_rounds, items } = req.validatedBody;
       const { result } = await createRfqWorkflow(req.scope).run({ input: { need_text, max_rounds } });
-      const ownerEmail = await handTokenToOwner(req.scope, req.auth_context.actor_id, result.rfq_id, result.accept_token);
+      // Klucz agenta z konta klienta: bot działa w imieniu tego klienta, więc token idzie do niego samego.
+      const viaAgentKey = req.auth_context.app_metadata?.agent_key === true;
+      const ownerEmail = viaAgentKey
+        ? await storeAcceptToken(req.scope, req.auth_context.actor_id, result.rfq_id, result.accept_token).then(async () =>
+            (await req.scope.resolve(Modules.CUSTOMER).retrieveCustomer(req.auth_context.actor_id)).email
+          )
+        : await handTokenToOwner(req.scope, req.auth_context.actor_id, result.rfq_id, result.accept_token);
       if (items?.length) {
         await setRfqItemsWorkflow(req.scope).run({ input: { rfq_id: result.rfq_id, items } });
       }
@@ -50,4 +57,18 @@ export async function POST(req: AuthenticatedMedusaRequest<AgentRfqBody>, res: M
     },
     201
   );
+}
+
+// GET /agents/rfqs: zapytania klienta (z tokenów akceptacji w jego koncie), żeby bot mógł wznowić pracę.
+export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse): Promise<void> {
+  await respond(req, res, async () => {
+    const customer = await req.scope.resolve(Modules.CUSTOMER).retrieveCustomer(req.auth_context.actor_id);
+    const ids = Object.keys(acceptTokensOf(customer)).reverse();
+    const views = await Promise.all(ids.map((id) => loadRfqView(req.scope, id).catch(() => null)));
+    return {
+      rfqs: views
+        .filter((rfq) => rfq !== null)
+        .map((rfq) => ({ id: rfq.id, status: rfq.status, need_text: rfq.need_text, negotiations: rfq.negotiations.length })),
+    };
+  });
 }

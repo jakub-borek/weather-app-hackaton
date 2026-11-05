@@ -1,5 +1,6 @@
 import { authenticate, defineMiddlewares, validateAndTransformBody } from "@medusajs/framework/http";
 import { z } from "@medusajs/framework/zod";
+import { agentAuth } from "../lib/agent-key";
 
 // --- RFQ (F03), kontrakt: docs/rfq-contract.md ---
 const LineSchema = z.object({
@@ -87,10 +88,9 @@ export default defineMiddlewares({
       middlewares: [validateAndTransformBody(SellerMessageSchema)],
     },
     { matcher: "/agents/login", method: ["POST"], middlewares: [validateAndTransformBody(AgentLoginSchema)] },
-    {
-      matcher: "/agents/rfqs",
-      method: ["POST"],
-      middlewares: [authenticate("customer", ["bearer"]), validateAndTransformBody(AgentRfqSchema)],
-    },
+    // Klucz agenta (x-agent-key z konta w sklepie) albo JWT z POST /agents/login.
+    { matcher: "/agents/rfqs", method: ["POST"], middlewares: [agentAuth, validateAndTransformBody(AgentRfqSchema)] },
+    { matcher: "/agents/rfqs", method: ["GET"], middlewares: [agentAuth] },
+    { matcher: "/store/agent-key", method: ["POST"], middlewares: [authenticate("customer", ["session", "bearer"])] },
   ],
 });
