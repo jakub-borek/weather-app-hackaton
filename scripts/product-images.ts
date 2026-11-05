@@ -220,7 +220,8 @@ async function attachImages(): Promise<void> {
 }
 
 // Storefront trzyma listę produktów w cache Next (cacheLife "max"), więc bez tego
-// pokazuje stare dane, czyli szare zaślepki zamiast zdjęć.
+// pokazuje stare dane, czyli szare zaślepki zamiast zdjęć. Po resecie bazy także stary region, więc
+// lista ma 0 ofert. revalidateTag(..., "max") to stale-while-revalidate: świeże dane od drugiego wejścia.
 async function revalidateStorefront(): Promise<void> {
   const envFile = join(import.meta.dir, "../marketplace/apps/storefront/.env.local");
   const fallback = join(import.meta.dir, "../marketplace/apps/storefront/.env");
@@ -231,7 +232,7 @@ async function revalidateStorefront(): Promise<void> {
     const response = await fetch(`${url}/api/revalidate`, {
       method: "POST",
       headers: { "content-type": "application/json", "x-revalidate-secret": secret ?? "" },
-      body: JSON.stringify({ tags: ["products", "offers", "categories", "collections", "sellers"] }),
+      body: JSON.stringify({ tags: ["regions", "products", "offers", "categories", "collections", "sellers"] }),
     });
     console.log(`Cache storefrontu: ${response.ok ? "odświeżony" : `nie odświeżony (${response.status})`}`);
   } catch {
