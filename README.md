@@ -36,7 +36,7 @@ cd marketplace && bun run dev             # API :9000, admin :9000/dashboard, sp
 
 ```bash
 cd marketplace/packages/api && bun run dev   # sam backend
-./scripts/share-marketplace.sh               # tunel, build paneli pod publiczny URL, linki do wysłania
+./scripts/share-marketplace.sh               # tunele (backend + storefront, jeśli chodzi na :3000), build paneli, linki
 ./scripts/share-marketplace.sh --stop        # koniec
 ```
 

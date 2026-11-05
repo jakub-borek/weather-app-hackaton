@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // Next 16 dev blocks /_next/* for non-localhost origins; lets the team open the
+  // dev storefront through scripts/share-marketplace.sh (ngrok).
+  allowedDevOrigins: ['*.ngrok-free.app', '*.ngrok-free.dev', '*.ngrok.app'],
   cacheComponents: true,
   partialPrefetching: true,
   output: "standalone",

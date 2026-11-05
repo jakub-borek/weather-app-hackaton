@@ -10,29 +10,48 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 MP="$ROOT/marketplace"
 API_PORT=9000
+STOREFRONT_PORT=3000
 API_LOCAL="http://localhost:$API_PORT"
-NGROK_API="http://127.0.0.1:4040/api/tunnels"
-NGROK_LOG="$ROOT/ngrok.log"   # ignorowany przez *.log w .gitignore
+NGROK_INSPECT_PORTS="4040 4041 4042"   # każdy agent ngrok bierze kolejny wolny port inspektora
 VITE_DEV_PORTS="7010 7001"    # admin, vendor (apps/*/package.json)
 PANELS="admin vendor"
 
 die() { echo "BŁĄD: $*" >&2; exit 1; }
 
-# Publiczny URL tunelu na API_PORT albo pusty string, gdy tunel nie działa.
+# Publiczny URL tunelu na porcie $1 albo pusty string, gdy tunel nie działa.
 tunnel_url() {
-  curl -s "$NGROK_API" 2>/dev/null | PORT="$API_PORT" node -e '
-    let s = ""
-    process.stdin.on("data", d => (s += d)).on("end", () => {
-      try {
-        const t = JSON.parse(s).tunnels.find(
-          t => t.proto === "https" && t.config.addr.endsWith(":" + process.env.PORT))
-        console.log(t ? t.public_url : "")
-      } catch { console.log("") }
-    })'
+  local port="$1" url="" inspect
+  for inspect in $NGROK_INSPECT_PORTS; do
+    url="$(curl -s "http://127.0.0.1:$inspect/api/tunnels" 2>/dev/null | PORT="$port" node -e '
+      let s = ""
+      process.stdin.on("data", d => (s += d)).on("end", () => {
+        try {
+          const t = JSON.parse(s).tunnels.find(
+            t => t.proto === "https" && t.config.addr.endsWith(":" + process.env.PORT))
+          console.log(t ? t.public_url : "")
+        } catch { console.log("") }
+      })')"
+    [ -n "$url" ] && break
+  done
+  echo "$url"
+}
+
+# Startuje "ngrok http $1" w tle (log w ngrok-$1.log) i czeka na publiczny URL.
+start_tunnel() {
+  local port="$1" log="$ROOT/ngrok-$1.log" url=""   # *.log jest w .gitignore
+  url="$(tunnel_url "$port")"
+  if [ -n "$url" ]; then echo "$url"; return; fi
+  echo "=== Startuję ngrok http $port (log: ngrok-$port.log) ===" >&2
+  nohup ngrok http "$port" --log stdout --log-format logfmt > "$log" 2>&1 &
+  for _ in $(seq 1 30); do
+    url="$(tunnel_url "$port")"; [ -n "$url" ] && break; sleep 0.5
+  done
+  [ -n "$url" ] || { tail -5 "$log" >&2; die "ngrok na :$port nie wystartował, log wyżej (brak authtokena? limit 3 agentów?)"; }
+  echo "$url"
 }
 
 if [ "${1:-}" = "--stop" ]; then
-  pkill -f "ngrok http $API_PORT" && echo "Tunel zatrzymany." || echo "Tunel nie działał."
+  pkill -f "ngrok http ($API_PORT|$STOREFRONT_PORT)" && echo "Tunele zatrzymane." || echo "Tunele nie działały."
   # Build ma wpisany adres martwego tunelu, więc lokalnie by nie działał.
   for app in $PANELS; do rm -rf "$MP/apps/$app/dist"; done
   echo "Build paneli usunięty. Lokalnie panele dają: cd marketplace && bun run dev"
@@ -51,16 +70,15 @@ for p in $VITE_DEV_PORTS; do
   fi
 done
 
-URL="$(tunnel_url)"
-if [ -z "$URL" ]; then
-  echo "=== Startuję ngrok http $API_PORT (log: ngrok.log) ==="
-  nohup ngrok http "$API_PORT" --log stdout --log-format logfmt > "$NGROK_LOG" 2>&1 &
-  for _ in $(seq 1 30); do
-    URL="$(tunnel_url)"; [ -n "$URL" ] && break; sleep 0.5
-  done
-  [ -n "$URL" ] || { tail -5 "$NGROK_LOG" >&2; die "ngrok nie wystartował, log wyżej (brak authtokena? limit 3 agentów?)"; }
+URL="$(start_tunnel "$API_PORT")"
+
+# Storefront (Next dev na :3000) dostaje osobny tunel. Woła backend po stronie serwera
+# (MEDUSA_BACKEND_URL=localhost:9000), więc nic w nim nie przebudowujemy.
+STOREFRONT_URL=""
+if lsof -nP -iTCP:"$STOREFRONT_PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+  STOREFRONT_URL="$(start_tunnel "$STOREFRONT_PORT")"
 else
-  echo "=== Tunel już działa ==="
+  echo "Storefront nie chodzi na :$STOREFRONT_PORT, pomijam. Odpal: cd marketplace/apps/storefront && bun run dev, potem ten skrypt jeszcze raz."
 fi
 
 # Panele mają adres backendu wpisany przy buildzie (__BACKEND_URL__ z MERCUR_BACKEND_URL),
@@ -99,6 +117,7 @@ cat <<EOF
 ==================================================================
 Mercur publicznie: $URL
 
+  Storefront:        ${STOREFRONT_URL:-<nie chodzi, odpal apps/storefront>}${STOREFRONT_URL:+/pl}
   Panel admina:      $URL/dashboard   admin@example.com / supersecret
   Panel sprzedawcy:  $URL/seller      techhurt@example.com / supersecret
                                       (też laptopol@, istacja@example.com)
