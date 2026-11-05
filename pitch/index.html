@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Agents haggle. The marketplace holds the line.</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agents Haggle Pitch</title>
 <style>
+  /* Single committed look: dark stage, cream 1600x900 slides scaled to fit (same system as pitch/index.html) */
   :root {
+    --stage: #1b1b1f;
     --bg: #FBF8F2;
     --ink: #121212;
     --muted: #6B6B6B;
@@ -18,9 +20,12 @@
     --green-soft: #E8F7EE;
     --red: #DC2626;
     --red-soft: #FDECEC;
+    --white: #FFFFFF;
+    --chrome: #EDE8DF;
+    color-scheme: dark;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: #1b1b1f; font-family: -apple-system, "SF Pro Display", "Helvetica Neue", Inter, Arial, sans-serif; color: var(--ink); }
+  html, body { height: 100%; background: var(--stage); font-family: -apple-system, "SF Pro Display", "Helvetica Neue", Inter, Arial, sans-serif; color: var(--ink); }
   .stage { position: fixed; inset: 0; overflow: hidden; }
   .deck { width: 1600px; height: 900px; position: absolute; left: 50%; top: 50%; transform-origin: center center; }
   .slide {
@@ -30,33 +35,33 @@
   }
   .slide.active { visibility: visible; animation: in .3s ease; }
   @keyframes in { from { opacity: .4; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .slide.active { animation: none; } }
   .kicker { font-size: 22px; letter-spacing: .14em; text-transform: uppercase; color: var(--orange); font-weight: 600; margin-bottom: 26px; }
   h1 { font-size: 112px; line-height: 1.02; font-weight: 600; letter-spacing: -0.035em; }
-  h2 { font-size: 68px; line-height: 1.05; font-weight: 600; letter-spacing: -0.03em; margin-bottom: 48px; }
+  h2 { font-size: 68px; line-height: 1.05; font-weight: 600; letter-spacing: -0.03em; margin-bottom: 48px; text-wrap: balance; }
   .accent { color: var(--purple); }
   .lead { font-size: 36px; line-height: 1.35; color: #3a3a3a; max-width: 1150px; margin-top: 44px; }
   .footer { position: absolute; left: 110px; right: 110px; bottom: 44px; display: flex; justify-content: space-between; font-size: 18px; color: var(--muted); }
 
-  /* blobs */
   .blob { position: absolute; display: grid; place-items: center; }
   .blob .eyes { display: flex; gap: 18%; width: 40%; justify-content: center; }
-  .blob .eyes i { display: block; width: 22%; aspect-ratio: 1 / 2.4; background: #fff; border-radius: 99px; }
+  .blob .eyes i { display: block; width: 22%; aspect-ratio: 1 / 2.4; background: var(--white); border-radius: 99px; }
 
   /* slide 1 */
   .s1 .blob.buyer { width: 300px; height: 300px; right: 330px; top: 140px; background: var(--purple); border-radius: 50%; }
   .s1 .blob.seller { width: 260px; height: 260px; right: 90px; top: 420px; background: var(--orange); border-radius: 40% 60% 55% 45% / 50% 45% 55% 50%; }
-  .s1 .bubble { position: absolute; background: #fff; border: 2px solid var(--line); border-radius: 22px; padding: 14px 22px; font-size: 26px; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,.06); }
+  .s1 .bubble { position: absolute; background: var(--white); border: 2px solid var(--line); border-radius: 22px; padding: 14px 22px; font-size: 26px; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,.06); }
   .s1 .b1 { right: 420px; top: 470px; }
   .s1 .b2 { right: 120px; top: 300px; }
   .s1 .b3 { right: 300px; top: 690px; color: var(--green); }
   .s1 .title { max-width: 900px; margin-top: 34px; font-size: 96px; }
-  .s1 .problem { font-size: 28px; line-height: 1.4; max-width: 860px; color: #3a3a3a; background: #fff; border: 2px solid var(--line); border-radius: 18px; padding: 16px 24px; }
+  .s1 .problem { font-size: 28px; line-height: 1.4; max-width: 860px; color: #3a3a3a; background: var(--white); border: 2px solid var(--line); border-radius: 18px; padding: 16px 24px; }
   .s1 .problem b { color: var(--orange); }
   .s1 .lead { max-width: 860px; font-size: 30px; margin-top: 34px; }
 
   /* slide 2: flow */
   .flow { display: grid; grid-template-columns: 1fr 70px 1fr 70px 1fr; align-items: stretch; }
-  .card { background: #fff; border: 2px solid var(--line); border-radius: 24px; padding: 30px 32px; }
+  .card { background: var(--white); border: 2px solid var(--line); border-radius: 24px; padding: 30px 32px; }
   .card h3 { font-size: 30px; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; }
   .card p { font-size: 23px; line-height: 1.4; color: #444; }
   .dot { width: 34px; height: 34px; border-radius: 50%; flex: none; }
@@ -64,34 +69,63 @@
   .rules { margin-top: 34px; display: grid; grid-template-columns: 1.6fr 1fr; gap: 30px; }
   .rules .card.code { background: var(--purple-soft); border-color: #D9CBFF; }
   .rules ul { list-style: none; display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
-  .rules li { font-size: 23px; background: #fff; border-radius: 99px; padding: 10px 20px; border: 2px solid #D9CBFF; }
+  .rules li { font-size: 23px; background: var(--white); border-radius: 99px; padding: 10px 20px; border: 2px solid #D9CBFF; }
   .rules .card.human { background: var(--green-soft); border-color: #BFE6CD; }
-  .tag { font-family: ui-monospace, Menlo, monospace; font-size: 20px; color: var(--purple); }
 
-  /* slide 3 */
+  /* product slides */
+  .h2-tight { font-size: 50px; margin-bottom: 30px; white-space: nowrap; }
+  .product { display: grid; grid-template-columns: 920px 1fr; gap: 44px; flex: 1; min-height: 0; }
+  .shots { position: relative; height: 560px; }
+  .browser { position: absolute; background: var(--white); border-radius: 16px; overflow: hidden; border: 1.5px solid #DCD5C8; box-shadow: 0 30px 60px -20px rgba(40,30,10,.28), 0 8px 20px rgba(40,30,10,.08); }
+  .browser .bar { height: 34px; background: var(--chrome); display: flex; align-items: center; gap: 8px; padding: 0 14px; }
+  .browser .bar i { width: 11px; height: 11px; border-radius: 50%; background: #CFC7B8; }
+  .browser .bar span { margin-left: 14px; flex: 1; height: 20px; border-radius: 6px; background: var(--white); font-size: 12px; color: var(--muted); display: flex; align-items: center; padding: 0 10px; font-family: ui-monospace, Menlo, monospace; }
+  .browser img { display: block; width: 100%; height: auto; }
+  .back { left: 160px; top: 0; width: 760px; opacity: .96; }
+  .front { left: 0; top: 96px; width: 860px; }
+  .badge { position: absolute; right: 0; bottom: 6px; background: var(--green); color: var(--white); border-radius: 18px; padding: 14px 22px; box-shadow: 0 14px 30px -10px rgba(22,163,74,.6); }
+  .badge b { display: block; font-size: 40px; letter-spacing: -0.02em; line-height: 1; }
+  .badge small { font-size: 17px; opacity: .9; }
+  .callouts { display: flex; flex-direction: column; gap: 18px; justify-content: center; }
+  .callout { display: grid; grid-template-columns: 46px 1fr; gap: 16px; align-items: start; }
+  .callout .n { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 21px; color: var(--white); }
+  .callout h3 { font-size: 27px; margin-bottom: 6px; letter-spacing: -0.01em; }
+  .callout p { font-size: 20px; line-height: 1.4; color: #444; }
+
+  .round { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 50px; flex: 1; min-height: 0; }
+  .chartwrap { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .chartwrap svg { max-height: 470px; }
+  .chartwrap .pill { font-size: 19px; padding: 8px 16px; }
+  .chartwrap .meta { gap: 10px; flex-wrap: nowrap; }
+  .chartwrap svg { width: 100%; height: auto; display: block; }
+  .chartwrap svg text { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  .meta { display: flex; gap: 14px; flex-wrap: wrap; }
+  .pill { font-size: 22px; padding: 10px 20px; white-space: nowrap; border-radius: 99px; background: var(--white); border: 2px solid var(--line); font-variant-numeric: tabular-nums; }
+  .pill.good { background: var(--green-soft); border-color: #BFE6CD; color: #0f6b31; font-weight: 600; }
+  .thread { position: relative; height: 580px; border-radius: 18px; overflow: hidden; border: 1.5px solid #DCD5C8; background: var(--white); box-shadow: 0 30px 60px -24px rgba(40,30,10,.28); margin-top: -10px; }
+  .thread img { width: 100%; height: auto; display: block; }
+  .thread::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 160px; background: linear-gradient(to bottom, rgba(255,255,255,0), var(--white)); }
+  .thread .cap { position: absolute; left: 0; right: 0; bottom: 18px; text-align: center; z-index: 1; font-size: 18px; color: var(--muted); }
+
+  /* trust slide */
   .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 60px; flex: 1; }
   .chat { display: flex; flex-direction: column; gap: 16px; }
   .msg { max-width: 700px; padding: 18px 24px; border-radius: 24px; font-size: 25px; line-height: 1.35; }
   .msg small { display: block; font-size: 17px; letter-spacing: .08em; text-transform: uppercase; opacity: .65; margin-bottom: 6px; font-weight: 600; }
-  .msg.buyer { background: var(--ink); color: #fff; align-self: flex-end; border-bottom-right-radius: 8px; }
-  .msg.seller { background: #fff; border: 2px solid var(--line); border-bottom-left-radius: 8px; }
+  .msg.buyer { background: var(--ink); color: var(--white); align-self: flex-end; border-bottom-right-radius: 8px; }
+  .msg.seller { background: var(--white); border: 2px solid var(--line); border-bottom-left-radius: 8px; }
   .msg.backend { background: var(--red-soft); border: 2px solid #F5C2C2; color: var(--red); font-family: ui-monospace, Menlo, monospace; font-size: 24px; }
   .caption { font-size: 22px; line-height: 1.4; color: #444; max-width: 640px; }
   .label { font-size: 20px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
   .stats { display: flex; flex-direction: column; justify-content: center; gap: 26px; }
-  .big { font-size: 40px; color: var(--muted); font-weight: 500; }
+  .big { font-size: 40px; color: var(--muted); font-weight: 500; font-variant-numeric: tabular-nums; }
   .big s { text-decoration-thickness: 3px; }
-  .huge { font-size: 128px; font-weight: 700; letter-spacing: -0.04em; color: var(--green); line-height: 1; }
-  .meta { display: flex; gap: 14px; flex-wrap: wrap; }
-  .pill { font-size: 22px; padding: 10px 20px; border-radius: 99px; background: #fff; border: 2px solid var(--line); }
+  .huge { font-size: 128px; font-weight: 700; letter-spacing: -0.04em; color: var(--green); line-height: 1; font-variant-numeric: tabular-nums; }
 
-  /* slide 4 */
   .grid5 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
   .grid5 .card { min-height: 0; padding: 26px 30px; }
   .grid5 .card .ico { font-size: 40px; margin-bottom: 14px; }
-  .grid5 .card.wide { grid-column: span 1; }
 
-  /* slide 5 */
   table { border-collapse: collapse; width: 100%; font-size: 30px; }
   th { text-align: left; font-size: 20px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 0 24px 16px; }
   td { padding: 24px; border-top: 2px solid var(--line); vertical-align: top; }
@@ -100,7 +134,21 @@
   td.us::before { content: "✓ "; color: var(--green); }
   .closing { margin-top: auto; font-size: 54px; font-weight: 600; letter-spacing: -0.02em; }
 
-  .nav { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); color: #9a9aa3; font-size: 14px; font-family: -apple-system, sans-serif; }
+
+  /* seller-side slide */
+  .browser.dark { background: #1c1c1f; border-color: #2e2e33; }
+  .browser.dark .bar { background: #2a2a2e; }
+  .browser.dark .bar i { background: #4a4a50; }
+  .browser.dark .bar span { background: #1c1c1f; color: #9a9aa3; }
+  .clip { overflow: hidden; }
+  .clip img { margin-top: -2.1%; }
+  .inbox { left: 210px; top: 0; width: 710px; }
+  .order { left: 0; top: 78px; width: 750px; }
+  .lens { position: absolute; left: -24px; top: 300px; width: 960px; border-radius: 14px; overflow: hidden; border: 3px solid var(--purple); box-shadow: 0 24px 50px -12px rgba(60,30,140,.45); background: #1c1c1f; }
+  .lens img { display: block; width: 100%; height: auto; }
+  .lens-tag { position: absolute; left: -24px; top: 266px; background: var(--purple); color: var(--white); font-size: 16px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; padding: 6px 12px; border-radius: 8px 8px 0 0; }
+  .callout s { color: var(--muted); text-decoration-thickness: 2px; }
+  .nav { position: fixed; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); color: #9a9aa3; font-size: 13px; white-space: nowrap; }
   .progress { position: absolute; left: 0; bottom: 0; height: 6px; background: var(--purple); transition: width .35s ease; }
   @page { size: 1600px 900px; margin: 0; }
   @media print {
@@ -114,6 +162,7 @@
 </style>
 </head>
 <body>
+
 <div class="stage">
   <div class="deck" id="deck">
 
@@ -125,8 +174,8 @@
       <p class="lead">Our B2B marketplace lets the buyer's AI agent negotiate with every seller's AI agent at once. Price floors and stock are enforced in code, and nothing is bought until a human says yes. Then it's a real order.</p>
       <div class="blob buyer"><div class="eyes"><i></i><i></i></div></div>
       <div class="blob seller"><div class="eyes"><i></i><i></i></div></div>
-      <div class="bubble b1">20 MacBooks at 4 300?</div>
-      <div class="bubble b2">4 650, final 4 520</div>
+      <div class="bubble b1">20 MacBooks at 4 200?</div>
+      <div class="bubble b2">4 503, final 4 290</div>
       <div class="bubble b3">Deal ✓</div>
       <div class="footer"><span>Track: Multi-agent Systems · built on Mercur (open source) + Grok</span><span>01</span></div>
     </section>
@@ -138,7 +187,7 @@
       <div class="flow">
         <div class="card">
           <h3><span class="dot" style="background:var(--purple)"></span>Your Grok Bot</h3>
-          <p>“We need 20 MacBooks, 30 Lenovo, 10 HP.”<br>Any buyer agent connects to our marketplace API. Ours runs on Grok Bot.</p>
+          <p>“We need 20 MacBooks and 10 HP, budget 130k.”<br>Any buyer agent connects to our marketplace. Ours runs on Grok Bot.</p>
         </div>
         <div class="arrow">→</div>
         <div class="card">
@@ -169,7 +218,113 @@
       <div class="footer"><span>Mercur (open-source Medusa marketplace) · Grok function calling · Grok Bot</span><span>02</span></div>
     </section>
 
-    <!-- 3. Safe + value -->
+    <!-- 3. The product (screenshots) -->
+    <section class="slide">
+      <div class="kicker">The product · live demo</div>
+      <h2 class="h2-tight">One request, three sellers, <span class="accent">every move on record.</span></h2>
+      <div class="product">
+        <div class="shots">
+          <div class="browser back">
+            <div class="bar"><i></i><i></i><i></i><span>store · /pl/categories</span></div>
+            <img src="img/deck-store.jpg" alt="Storefront: product listing with 92 laptops, monitors and accessories">
+          </div>
+          <div class="browser front">
+            <div class="bar"><i></i><i></i><i></i><span>store · /pl/rfq/rfq_01M6PK1F…</span></div>
+            <img src="img/deck-negotiation.jpg" alt="RFQ page: cart value 141 700 zł, best offers 127 700 zł, savings 14 000 zł, threads with LaptoPol, TechHurt and iStacja">
+          </div>
+          <div class="badge"><b>−14 000 zł</b><small>9.9% below cart value</small></div>
+        </div>
+        <div class="callouts">
+          <div class="callout"><div class="n" style="background:var(--ink)">1</div><div><h3>One RFQ, three sellers</h3><p>20 MacBook Air + 10 EliteBook go to LaptoPol, TechHurt and iStacja at once. Each answers with its own agent.</p></div></div>
+          <div class="callout"><div class="n" style="background:var(--purple)">2</div><div><h3>Priced, expiring offers</h3><p>Every offer and counter is a priced line in the database with a “valid until” time, not just chat text.</p></div></div>
+          <div class="callout"><div class="n" style="background:var(--orange)">3</div><div><h3>Live savings</h3><p>Cart value, best offers and savings update as the agents haggle.</p></div></div>
+          <div class="callout"><div class="n" style="background:var(--green)">4</div><div><h3>A human says yes</h3><p>The buyer accepts iStacja's MacBooks. Mercur creates order #1 for that seller.</p></div></div>
+        </div>
+      </div>
+      <div class="footer"><span>Real screenshots · RFQ rfq_01M6PK1F… · 5 Nov 2026, 20:37–20:41</span><span>03</span></div>
+    </section>
+
+    <!-- 4. Round by round -->
+    <section class="slide">
+      <div class="kicker">One thread, round by round · iStacja × buyer agent</div>
+      <h2 class="h2-tight">4 minutes of haggling, <span class="accent">213 zł off every MacBook.</span></h2>
+      <div class="round">
+        <div class="chartwrap">
+          <svg viewBox="0 0 860 440" role="img" aria-label="Per-unit price by round: seller 4503, buyer 4200, seller 4321, buyer 4260, final 4290 zł">
+<rect x="96" y="251.0" width="734" height="25.5" fill="#E8F7EE"/>
+<line x1="96" x2="830" y1="327.5" y2="327.5" stroke="#E7E1D6" stroke-width="1.5"/>
+<text x="84" y="332.5" text-anchor="end" font-size="16" fill="#6B6B6B">4 200 zł</text>
+<line x1="96" x2="830" y1="242.5" y2="242.5" stroke="#E7E1D6" stroke-width="1.5"/>
+<text x="84" y="247.5" text-anchor="end" font-size="16" fill="#6B6B6B">4 300 zł</text>
+<line x1="96" x2="830" y1="157.5" y2="157.5" stroke="#E7E1D6" stroke-width="1.5"/>
+<text x="84" y="162.5" text-anchor="end" font-size="16" fill="#6B6B6B">4 400 zł</text>
+<line x1="96" x2="830" y1="72.5" y2="72.5" stroke="#E7E1D6" stroke-width="1.5"/>
+<text x="84" y="77.5" text-anchor="end" font-size="16" fill="#6B6B6B">4 500 zł</text>
+<path d="M146.0,69.9 L307.0,327.5 L468.0,224.7 L629.0,276.5 L790.0,251.0" fill="none" stroke="#121212" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="2 7" stroke-linecap="round"/>
+<circle cx="146.0" cy="69.9" r="11" fill="#F97316"/>
+<text x="146.0" y="45.9" text-anchor="middle" font-size="24" font-weight="700" fill="#121212">4 503</text>
+<text x="146.0" y="408" text-anchor="middle" font-size="17" font-weight="600" fill="#F97316">Seller offer</text>
+<text x="146.0" y="432" text-anchor="middle" font-size="15" fill="#6B6B6B">20:37:03</text>
+<circle cx="307.0" cy="327.5" r="11" fill="#8B5CF6"/>
+<text x="307.0" y="365.5" text-anchor="middle" font-size="24" font-weight="700" fill="#121212">4 200</text>
+<text x="307.0" y="408" text-anchor="middle" font-size="17" font-weight="600" fill="#8B5CF6">Buyer counter</text>
+<text x="307.0" y="432" text-anchor="middle" font-size="15" fill="#6B6B6B">20:38:21</text>
+<circle cx="468.0" cy="224.7" r="11" fill="#F97316"/>
+<text x="468.0" y="200.7" text-anchor="middle" font-size="24" font-weight="700" fill="#121212">4 321</text>
+<text x="468.0" y="408" text-anchor="middle" font-size="17" font-weight="600" fill="#F97316">Seller counter</text>
+<text x="468.0" y="432" text-anchor="middle" font-size="15" fill="#6B6B6B">20:39:08</text>
+<circle cx="629.0" cy="276.5" r="11" fill="#8B5CF6"/>
+<text x="629.0" y="314.5" text-anchor="middle" font-size="24" font-weight="700" fill="#121212">4 260</text>
+<text x="629.0" y="408" text-anchor="middle" font-size="17" font-weight="600" fill="#8B5CF6">Buyer counter</text>
+<text x="629.0" y="432" text-anchor="middle" font-size="15" fill="#6B6B6B">20:41:07</text>
+<circle cx="790.0" cy="251.0" r="19" fill="none" stroke="#16A34A" stroke-width="3"/>
+<circle cx="790.0" cy="251.0" r="11" fill="#16A34A"/>
+<text x="790.0" y="227.0" text-anchor="middle" font-size="24" font-weight="700" fill="#121212">4 290</text>
+<text x="790.0" y="408" text-anchor="middle" font-size="17" font-weight="600" fill="#16A34A">Final offer</text>
+<text x="790.0" y="432" text-anchor="middle" font-size="15" fill="#6B6B6B">20:41:13</text>
+</svg>
+          <div class="meta">
+            <span class="pill">4 503 → 4 290 zł / unit</span>
+            <span class="pill good">−4 260 zł on 20 MacBooks</span>
+                        <span class="pill">Gap 303 → 30 zł</span>
+            <span class="pill">Order #1 · 85 820 zł</span>
+          </div>
+        </div>
+        <div class="thread">
+          <img src="img/deck-thread-istacja.jpg" alt="iStacja thread: offer 4503 zł, buyer counter 4200 zł, seller 4321 zł, buyer 4260 zł, final 4290 zł, order #1">
+                  </div>
+      </div>
+      <div class="footer"><span>Per-unit price, 20 × Apple MacBook Air 13 M4 16 GB / 512 GB, PLN net</span><span>04</span></div>
+    </section>
+
+
+    <!-- 5. Seller side: real order -->
+    <section class="slide">
+      <div class="kicker">Seller side · Mercur vendor panel</div>
+      <h2 class="h2-tight">It ends with a real order, <span class="accent">not a chat log.</span></h2>
+      <div class="product">
+        <div class="shots">
+          <div class="browser dark inbox">
+            <div class="bar"><i></i><i></i><i></i><span>vendor · Zapytania ofertowe</span></div>
+            <img src="img/deck-vendor-inbox.jpg" alt="iStacja vendor panel: list of requests for quote with status Final offer and Accepted, round 3 of 3">
+          </div>
+          <div class="browser dark order">
+            <div class="bar"><i></i><i></i><i></i><span>vendor · Orders · #1</span></div>
+            <div class="clip"><img src="img/deck-vendor-order.jpg" alt="Order #1 in iStacja's vendor panel: 20 × MacBook Air at 4 290 zł instead of 4 600 zł, order total 85 820 zł, customer Firma Demo"></div>
+          </div>
+          <div class="lens-tag">Zoom · order line</div>
+          <div class="lens"><img src="img/deck-vendor-order-line.jpg" alt="Order line: MacBook Air 13 M4, list 4 600 zł crossed out, 4 290 zł, 20×, 85 800 zł"></div>
+        </div>
+        <div class="callouts">
+          <div class="callout"><div class="n" style="background:var(--orange)">1</div><div><h3>Every RFQ in the seller's inbox</h3><p>Requests and their rounds land in iStacja's panel under “Zapytania ofertowe”, refreshed every 2 s.</p></div></div>
+          <div class="callout"><div class="n" style="background:var(--purple)">2</div><div><h3>Negotiated price is the order price</h3><p><s>4 600</s> → <b>4 290 zł</b> per MacBook, × 20. Set on the server, so neither the UI nor an agent can change it.</p></div></div>
+          <div class="callout"><div class="n" style="background:var(--green)">3</div><div><h3>Order #1 · 85 820 zł</h3><p>A real Mercur order for Firma Demo, with shipping, payment and fulfilment, ready to ship.</p></div></div>
+        </div>
+      </div>
+      <div class="footer"><span>Real screenshots · iStacja vendor panel · order #1, 5 Nov 2026, 20:44</span><span>05</span></div>
+    </section>
+
+    <!-- 6. Safe + value -->
     <section class="slide">
       <div class="kicker">Why you can trust it</div>
       <h2 style="margin-bottom:34px">You can talk an agent into anything.<br><span class="accent">Not our backend.</span></h2>
@@ -181,17 +336,17 @@
           <p class="caption">The seller's agent was talked into it. The marketplace code checked the seller's price floor and blocked the offer anyway.</p>
         </div>
         <div class="stats">
-          <div class="label">Real run: 60 laptops, 3 sellers</div>
-          <div class="big">List price <s>273 400 zł</s></div>
-          <div class="big">Negotiated <b style="color:var(--ink)">248 600 zł</b></div>
-          <div class="huge">−24 800 zł</div>
-          <div class="meta"><span class="pill">3 sellers</span><span class="pill">3 rounds</span><span class="pill">&lt; 1 minute</span><span class="pill">9% saved</span></div>
+          <div class="label">Live run: 30 laptops, 3 sellers</div>
+          <div class="big">Cart value <s>141 700 zł</s></div>
+          <div class="big">Best offers <b style="color:var(--ink)">127 700 zł</b></div>
+          <div class="huge">−14 000 zł</div>
+          <div class="meta"><span class="pill">3 sellers</span><span class="pill">3 rounds</span><span class="pill">~4 minutes</span><span class="pill">9.9% saved</span></div>
         </div>
       </div>
-      <div class="footer"><span></span><span>03</span></div>
+      <div class="footer"><span></span><span>06</span></div>
     </section>
 
-    <!-- 4. What's next -->
+    <!-- 6. What's next -->
     <section class="slide">
       <div class="kicker">What's next</div>
       <h2 style="margin-bottom:36px">From a demo to <span class="accent">agent-ready commerce.</span></h2>
@@ -203,10 +358,10 @@
         <div class="card"><div class="ico">💸</div><h3>Business model</h3><p>The marketplace operator takes a commission on every negotiated order.</p></div>
         <div class="card" style="background:var(--purple-soft);border-color:#D9CBFF"><div class="ico">🤝</div><h3>Agent-to-agent standard</h3><p>The same RFQ contract works for any marketplace that wants agents as customers.</p></div>
       </div>
-      <div class="footer"><span>Built on open source: anyone can run their own agent-ready marketplace</span><span>04</span></div>
+      <div class="footer"><span>Built on open source: anyone can run their own agent-ready marketplace</span><span>07</span></div>
     </section>
 
-    <!-- 5. Why unique -->
+    <!-- 7. Why unique -->
     <section class="slide">
       <div class="kicker">Why this doesn't exist yet</div>
       <h2>Others write better emails. <span class="accent">We close the deal.</span></h2>
@@ -218,7 +373,7 @@
         <tr><td class="them">One vendor at a time</td><td class="us">One request → many sellers</td></tr>
       </table>
       <div class="closing">Agents haggle. <span class="accent">The marketplace holds the line.</span></div>
-      <div class="footer"><span>Thank you · Questions?</span><span>05</span></div>
+      <div class="footer"><span>Thank you · Questions?</span><span>08</span></div>
     </section>
 
     <div class="progress" id="progress"></div>
@@ -229,12 +384,12 @@
   const slides = [...document.querySelectorAll('.slide')];
   const deck = document.getElementById('deck');
   const bar = document.getElementById('progress');
-  let i = Math.max(0, Math.min(slides.length - 1, parseInt(location.hash.slice(1) || '1', 10) - 1));
+  let i = Math.max(0, Math.min(slides.length - 1, parseInt(location.hash.slice(1) || '1', 10) - 1 || 0));
   function show(n) {
     i = Math.max(0, Math.min(slides.length - 1, n));
     slides.forEach((s, k) => s.classList.toggle('active', k === i));
     bar.style.width = ((i + 1) / slides.length * 100) + '%';
-    history.replaceState(null, '', '#' + (i + 1));
+    try { history.replaceState(null, '', '#' + (i + 1)); } catch (e) {}
   }
   function fit() {
     const s = Math.min(innerWidth / 1600, innerHeight / 900) * 0.96;
@@ -244,10 +399,14 @@
   addEventListener('keydown', e => {
     if (['ArrowRight', 'PageDown', ' '].includes(e.key)) show(i + 1);
     if (['ArrowLeft', 'PageUp'].includes(e.key)) show(i - 1);
-    if (e.key === 'f' || e.key === 'F') document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+    if (e.key === 'f' || e.key === 'F') {
+      const d = document.documentElement;
+      (document.fullscreenElement ? document.exitFullscreen() : d.requestFullscreen?.())?.catch?.(() => {});
+    }
   });
   addEventListener('click', e => show(e.clientX > innerWidth / 3 ? i + 1 : i - 1));
   fit(); show(i);
 </script>
+
 </body>
 </html>
