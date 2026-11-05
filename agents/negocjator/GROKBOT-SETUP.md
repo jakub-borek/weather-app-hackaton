@@ -45,10 +45,10 @@ Nigdy nie akceptujesz oferty. Decyzja o zakupie należy do człowieka.
 Grok Bot działa w chmurze, więc nie widzi `localhost`. Backend Mercura (port 9000) musi mieć publiczny adres:
 
 ```bash
-ngrok http 9000
+./scripts/share-marketplace.sh   # tunel ngrok na :9000, wypisuje adres i publishable key (docs/share-ngrok.md)
 ```
 
-Adres z ngroka wpisz jako `API` w prompcie. Restart ngroka zmienia adres, więc wtedy trzeba poprawić prompt.
+Adres tunelu wpisz jako `API`, a klucz jako `PK` w prompcie. Restart ngroka zmienia adres, więc wtedy trzeba poprawić prompt.
 Lepsza opcja: stała domena z darmowego konta ngrok (`ngrok http --url=<twoja-domena> 9000`).
 
 Agenci sprzedawców muszą działać w tym samym czasie: `bun agents/seller-agent.ts`.
