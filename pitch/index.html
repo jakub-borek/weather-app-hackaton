@@ -148,6 +148,27 @@
   .lens img { display: block; width: 100%; height: auto; }
   .lens-tag { position: absolute; left: -24px; top: 266px; background: var(--purple); color: var(--white); font-size: 16px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; padding: 6px 12px; border-radius: 8px 8px 0 0; }
   .callout s { color: var(--muted); text-decoration-thickness: 2px; }
+
+  /* flow slide */
+  .steps { display: grid; grid-template-columns: 1fr 34px 1fr 34px 1fr 34px 1fr; align-items: stretch; margin-bottom: 26px; }
+  .steps .arrow { font-size: 28px; }
+  .step { background: var(--white); border: 2px solid var(--line); border-radius: 18px; padding: 14px 16px; display: flex; gap: 12px; align-items: center; min-width: 0; }
+  .step .n { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 18px; color: var(--white); flex: none; }
+  .step b { display: block; font-size: 21px; letter-spacing: -0.01em; }
+  .step span { display: block; font-size: 16px; color: var(--muted); margin-top: 2px; }
+  .flowshots { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 44px; align-items: start; }
+  .app { display: flex; flex-direction: column; gap: 10px; }
+  .app .tag { font-size: 16px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .app img { height: 432px; width: auto; max-width: none; display: block; border-radius: 16px; border: 1.5px solid #2e2e33; box-shadow: 0 30px 60px -22px rgba(20,10,40,.45); }
+  .hub { align-self: center; margin-top: 26px; background: var(--ink); color: var(--white); border-radius: 22px; padding: 26px 28px; position: relative; }
+  .hub h3 { font-size: 28px; margin-bottom: 12px; }
+  .hub ul { list-style: none; }
+  .hub li { font-size: 19px; line-height: 1.35; padding: 6px 0 6px 28px; position: relative; }
+  .hub li::before { content: "✓"; position: absolute; left: 0; color: #7EE2A1; font-weight: 700; }
+  .hub .wire { position: absolute; top: 50%; width: 44px; height: 3px; background: #B9B2A6; }
+  .hub .wire.l { left: -44px; } .hub .wire.r { right: -44px; }
+  .hub .wire::after { content: ""; position: absolute; top: -5px; width: 13px; height: 13px; border-radius: 50%; background: var(--purple); }
+  .hub .wire.l::after { left: -6px; } .hub .wire.r::after { right: -6px; background: var(--orange); }
   .nav { position: fixed; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); color: #9a9aa3; font-size: 13px; white-space: nowrap; }
   .progress { position: absolute; left: 0; bottom: 0; height: 6px; background: var(--purple); transition: width .35s ease; }
   @page { size: 1600px 900px; margin: 0; }
@@ -178,6 +199,44 @@
       <div class="bubble b2">4 503, final 4 290</div>
       <div class="bubble b3">Deal ✓</div>
       <div class="footer"><span>Track: Multi-agent Systems · built on Mercur (open source) + Grok</span><span>01</span></div>
+    </section>
+
+
+    <!-- 2. The flow -->
+    <section class="slide">
+      <div class="kicker">The flow · Grok Bots on both sides, one marketplace in the middle</div>
+      <h2 class="h2-tight">You send one message. <span class="accent">The agents do the haggling.</span></h2>
+      <div class="steps">
+        <div class="step"><div class="n" style="background:var(--purple)">1</div><div><b>You text your bot</b><span>“20 MacBooks + 10 HP, 130k net”</span></div></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n" style="background:var(--ink)">2</div><div><b>One RFQ, every seller</b><span>the marketplace routes it</span></div></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n" style="background:var(--orange)">3</div><div><b>Seller bots haggle</b><span>inside their price floors</span></div></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n" style="background:var(--green)">4</div><div><b>You say yes</b><span>→ real order in Mercur</span></div></div>
+      </div>
+      <div class="flowshots">
+        <div class="app">
+          <div class="tag">Buyer · Grok Bot “Negocjator”</div>
+          <img src="img/deck-grok-negocjator.jpg" alt="Grok Bot chat with the Negocjator: best set 134 112 zł, counters sent to three sellers, acceptance left to the human, then 20 MacBooks ordered from iStacja at 4 290 zł">
+        </div>
+        <div class="hub">
+          <span class="wire l"></span><span class="wire r"></span>
+          <h3>The marketplace</h3>
+          <ul>
+            <li>One RFQ to every seller with stock</li>
+            <li>Every offer priced and logged</li>
+            <li>Price floor and stock checked in code</li>
+            <li>Only a human can accept</li>
+            <li>Accept → order per seller</li>
+          </ul>
+        </div>
+        <div class="app">
+          <div class="tag">Sellers · one Grok Bot per shop</div>
+          <img src="img/deck-grok-sellers.jpg" alt="Grok Bot fleet with seller bots iStacja, TechHurt and LaptoPol; TechHurt reports its first offer of 259 770 zł was accepted by the API and it waits for the buyer">
+        </div>
+      </div>
+      <div class="footer"><span>Real screenshots from Grok Bot · 5 Nov 2026</span><span>02</span></div>
     </section>
 
     <!-- 2. How it works -->
@@ -215,7 +274,7 @@
           <p>Clicks Accept in the store, or approves in the chat with their bot. → real order in Mercur at the negotiated price, split per seller.</p>
         </div>
       </div>
-      <div class="footer"><span>Mercur (open-source Medusa marketplace) · Grok function calling · Grok Bot</span><span>02</span></div>
+      <div class="footer"><span>Mercur (open-source Medusa marketplace) · Grok function calling · Grok Bot</span><span>03</span></div>
     </section>
 
     <!-- 3. The product (screenshots) -->
@@ -241,7 +300,7 @@
           <div class="callout"><div class="n" style="background:var(--green)">4</div><div><h3>A human says yes</h3><p>The buyer accepts iStacja's MacBooks. Mercur creates order #1 for that seller.</p></div></div>
         </div>
       </div>
-      <div class="footer"><span>Real screenshots · RFQ rfq_01M6PK1F… · 5 Nov 2026, 20:37–20:41</span><span>03</span></div>
+      <div class="footer"><span>Real screenshots · RFQ rfq_01M6PK1F… · 5 Nov 2026, 20:37–20:41</span><span>04</span></div>
     </section>
 
     <!-- 4. Round by round -->
@@ -294,7 +353,7 @@
           <img src="img/deck-thread-istacja.jpg" alt="iStacja thread: offer 4503 zł, buyer counter 4200 zł, seller 4321 zł, buyer 4260 zł, final 4290 zł, order #1">
                   </div>
       </div>
-      <div class="footer"><span>Per-unit price, 20 × Apple MacBook Air 13 M4 16 GB / 512 GB, PLN net</span><span>04</span></div>
+      <div class="footer"><span>Per-unit price, 20 × Apple MacBook Air 13 M4 16 GB / 512 GB, PLN net</span><span>05</span></div>
     </section>
 
 
@@ -321,7 +380,7 @@
           <div class="callout"><div class="n" style="background:var(--green)">3</div><div><h3>Order #1 · 85 820 zł</h3><p>A real Mercur order for Firma Demo, with shipping, payment and fulfilment, ready to ship.</p></div></div>
         </div>
       </div>
-      <div class="footer"><span>Real screenshots · iStacja vendor panel · order #1, 5 Nov 2026, 20:44</span><span>05</span></div>
+      <div class="footer"><span>Real screenshots · iStacja vendor panel · order #1, 5 Nov 2026, 20:44</span><span>06</span></div>
     </section>
 
     <!-- 6. Safe + value -->
@@ -343,7 +402,7 @@
           <div class="meta"><span class="pill">3 sellers</span><span class="pill">3 rounds</span><span class="pill">~4 minutes</span><span class="pill">9.9% saved</span></div>
         </div>
       </div>
-      <div class="footer"><span></span><span>06</span></div>
+      <div class="footer"><span></span><span>07</span></div>
     </section>
 
     <!-- 6. What's next -->
@@ -358,7 +417,7 @@
         <div class="card"><div class="ico">💸</div><h3>Business model</h3><p>The marketplace operator takes a commission on every negotiated order.</p></div>
         <div class="card" style="background:var(--purple-soft);border-color:#D9CBFF"><div class="ico">🤝</div><h3>Agent-to-agent standard</h3><p>The same RFQ contract works for any marketplace that wants agents as customers.</p></div>
       </div>
-      <div class="footer"><span>Built on open source: anyone can run their own agent-ready marketplace</span><span>07</span></div>
+      <div class="footer"><span>Built on open source: anyone can run their own agent-ready marketplace</span><span>08</span></div>
     </section>
 
     <!-- 7. Why unique -->
@@ -373,7 +432,7 @@
         <tr><td class="them">One vendor at a time</td><td class="us">One request → many sellers</td></tr>
       </table>
       <div class="closing">Agents haggle. <span class="accent">The marketplace holds the line.</span></div>
-      <div class="footer"><span>Thank you · Questions?</span><span>08</span></div>
+      <div class="footer"><span>Thank you · Questions?</span><span>09</span></div>
     </section>
 
     <div class="progress" id="progress"></div>
