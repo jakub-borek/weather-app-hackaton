@@ -5,7 +5,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/atoms/Button/Button';
 import { acceptRfq, getRfq, sendBuyerMessage, type Rfq, type RfqMessage, type RfqNegotiation } from '@/lib/data/rfq';
 
-const CLOSED = ['final', 'declined', 'accepted', 'rejected'];
+// Czat działa też po zakupie. Zamknięty tylko w wątkach odrzuconych.
+const CHAT_CLOSED = ['declined', 'rejected'];
 
 const latestSellerOffer = (negotiation: RfqNegotiation) =>
   [...negotiation.messages].reverse().find((message) => message.author === 'seller_agent' && message.lines.length > 0);
@@ -81,7 +82,7 @@ const RFQ_STATUS: Record<string, string> = {
   draft: 'Szkic',
   negotiating: 'Negocjacje trwają',
   ready: 'Oferty końcowe gotowe',
-  accepted: 'Zaakceptowane, zamówienia złożone',
+  accepted: 'Zamówienie złożone',
   cancelled: 'Anulowane'
 };
 const NEGOTIATION_STATUS: Record<string, string> = {
@@ -177,13 +178,21 @@ function Thread({
         </div>
         {negotiation.latest_total > 0 && <p className="label-md">{pln.format(negotiation.latest_total)}</p>}
       </div>
+      {negotiation.order && (
+        <div className="mb-3 rounded-sm bg-gray-50 px-3 py-2 text-sm">
+          <p className="label-md">Zamówienie #{negotiation.order.display_id}</p>
+          <p className="text-xs text-gray-500">
+            Razem z dostawą {pln.format(negotiation.order.total)} · status: {negotiation.order.status}
+          </p>
+        </div>
+      )}
       <div className="flex flex-1 flex-col gap-2">
         {negotiation.messages.map((message) => (
           <MessageBubble key={message.id} message={message} sellerName={negotiation.seller.name} titles={titles} />
         ))}
         {waiting && <p className="animate-pulse text-xs text-gray-500">{waiting}</p>}
       </div>
-      {canReply && !CLOSED.includes(negotiation.status) && (
+      {canReply && !CHAT_CLOSED.includes(negotiation.status) && (
         <BuyerReply negotiation={negotiation} titles={titles} onSent={onSent} />
       )}
       {selectable && (
@@ -204,9 +213,10 @@ export function RfqThreads({ initial }: { initial: Rfq }) {
 
   const open = rfq.status !== 'accepted' && rfq.status !== 'cancelled';
 
-  // Polling tylko dla otwartego RFQ i widocznej karty (tunel ngrok ma limit requestów).
+  // Polling dla widocznej karty (tunel ngrok ma limit requestów). Po zakupie dalej działa, bo czat zostaje.
+  const live = rfq.status !== 'cancelled';
   useEffect(() => {
-    if (!open) return;
+    if (!live) return;
     const refresh = () => {
       if (document.hidden) return;
       getRfq(rfq.id)
@@ -219,7 +229,7 @@ export function RfqThreads({ initial }: { initial: Rfq }) {
       clearInterval(timer);
       document.removeEventListener('visibilitychange', refresh);
     };
-  }, [rfq.id, open]);
+  }, [rfq.id, live]);
 
   const titles = useMemo(() => new Map(rfq.items.map((item) => [item.variant_id, item.product_title])), [rfq.items]);
   const toggle = (id: string) =>
@@ -273,7 +283,7 @@ export function RfqThreads({ initial }: { initial: Rfq }) {
             selectable={open && canAccept(negotiation)}
             selected={selected.includes(negotiation.id)}
             onToggle={() => toggle(negotiation.id)}
-            canReply={open}
+            canReply={live}
             onSent={() => getRfq(rfq.id).then(setRfq).catch(() => undefined)}
           />
         ))}
@@ -286,7 +296,8 @@ export function RfqThreads({ initial }: { initial: Rfq }) {
       )}
       {rfq.status === 'accepted' && (
         <p className="rounded-sm border p-4 text-sm">
-          Zamówienia złożone po wynegocjowanych cenach, osobno u każdego sprzedawcy. Grupa zamówień: {rfq.order_group_id}
+          Zamówienia złożone po wynegocjowanych cenach, osobno u każdego sprzedawcy. Zapisz link do tej strony: tu
+          widzisz zamówienia i możesz dalej pisać ze sprzedawcą.
         </p>
       )}
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}

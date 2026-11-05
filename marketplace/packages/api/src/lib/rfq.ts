@@ -150,6 +150,33 @@ export const latestSellerOffer = (negotiation: NegotiationRow) => {
 
 export const latestSellerLines = (negotiation: NegotiationRow): RfqLine[] => latestSellerOffer(negotiation)?.lines ?? [];
 
+export type RfqOrder = { id: string; display_id: number; total: number; status: string };
+type OrderWithVariants = { order: RfqOrder; variants: Set<string> };
+
+// Zamówienia z akceptacji (grupa zamówień) z wariantami, żeby przypiąć je do wątków sprzedawców.
+async function loadGroupOrders(container: MedusaContainer, orderGroupId: string | null): Promise<OrderWithVariants[]> {
+  if (!orderGroupId) return [];
+  const query = container.resolve(ContainerRegistrationKeys.QUERY);
+  const { data: groups } = await query.graph({ entity: "order_group", fields: ["orders.id"], filters: { id: orderGroupId } });
+  const ids = ((groups[0]?.orders ?? []) as { id: string }[]).map((order) => order.id);
+  if (!ids.length) return [];
+  const { data } = await query.graph({
+    entity: "order",
+    fields: ["id", "display_id", "total", "status", "items.variant_id"],
+    filters: { id: ids },
+  });
+  return (data as Record<string, any>[]).map((order) => ({
+    order: { id: order.id, display_id: order.display_id, total: Number(order.total), status: order.status },
+    variants: new Set((order.items ?? []).map((item: { variant_id: string }) => item.variant_id)),
+  }));
+}
+
+const orderForNegotiation = (orders: OrderWithVariants[], negotiation: NegotiationRow): RfqOrder | null => {
+  if (negotiation.status !== "accepted") return null;
+  const lines = latestSellerLines(negotiation);
+  return orders.find((entry) => lines.some((line) => entry.variants.has(line.variant_id)))?.order ?? null;
+};
+
 async function sellerNames(container: MedusaContainer, ids: string[]): Promise<Map<string, string>> {
   if (!ids.length) return new Map();
   const query = container.resolve(ContainerRegistrationKeys.QUERY);
@@ -177,6 +204,7 @@ export async function loadRfqView(container: MedusaContainer, rfqId: string) {
   }
   const negotiations = (rfq.negotiations ?? []) as unknown as NegotiationRow[];
   const names = await sellerNames(container, negotiations.map((n) => n.seller_id));
+  const orders = await loadGroupOrders(container, rfq.order_group_id);
   const items = asItems(rfq.items);
   return {
     id: rfq.id,
@@ -193,6 +221,7 @@ export async function loadRfqView(container: MedusaContainer, rfqId: string) {
       round: negotiation.round,
       messages: sortedMessages(negotiation),
       latest_total: lineTotal(latestSellerLines(negotiation)),
+      order: orderForNegotiation(orders, negotiation),
     })),
     summary: buildSummary(items, negotiations),
   };
@@ -205,9 +234,16 @@ export async function loadVendorNegotiations(container: MedusaContainer, sellerI
   );
   return Promise.all(
     negotiations.map(async (negotiation) => {
-      const rfq = negotiation.rfq as unknown as { id: string; need_text: string; max_rounds: number; items: unknown };
+      const rfq = negotiation.rfq as unknown as {
+        id: string;
+        need_text: string;
+        max_rounds: number;
+        items: unknown;
+        order_group_id: string | null;
+      };
       const items = asItems(rfq.items);
       const pricing = await loadSellerPricing(container, sellerId, items);
+      const orders = await loadGroupOrders(container, rfq.order_group_id);
       return {
         id: negotiation.id,
         rfq: { id: rfq.id, need_text: rfq.need_text, max_rounds: rfq.max_rounds },
@@ -218,6 +254,7 @@ export async function loadVendorNegotiations(container: MedusaContainer, sellerI
           .map(({ variant_id, product_title, quantity }) => ({ variant_id, product_title, quantity })),
         pricing: [...pricing.values()],
         messages: sortedMessages(negotiation as unknown as NegotiationRow),
+        order: orderForNegotiation(orders, negotiation as unknown as NegotiationRow),
       };
     })
   );

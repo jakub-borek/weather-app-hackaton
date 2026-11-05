@@ -18,14 +18,17 @@ import {
   type RfqLine,
 } from "../lib/rfq";
 
-// Wolny czat: wiadomość bez cen, nie zmienia kolejki ani rund. Działa, dopóki negocjacja jest otwarta.
+// Wolny czat: wiadomość bez cen, nie zmienia kolejki ani rund. Działa też po akceptacji (pytania po zakupie,
+// np. o dostawę). Zablokowany tylko w wątkach odrzuconych przez którąś stronę.
+const CHAT_CLOSED = ["declined", "rejected"];
+
 async function postChatNote(
   container: MedusaContainer,
   negotiation: { id: string; status: string },
   author: "buyer" | "buyer_agent" | "seller_agent",
   text: string
 ) {
-  if (CLOSED.includes(negotiation.status)) {
+  if (CHAT_CLOSED.includes(negotiation.status)) {
     throw ruleError("NEGOTIATION_CLOSED", `Negocjacja jest zamknięta (${negotiation.status})`);
   }
   if (!text.trim()) {

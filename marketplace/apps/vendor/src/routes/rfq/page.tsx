@@ -1,6 +1,7 @@
 // Panel sprzedawcy: czat RFQ. Sprzedawca widzi swoje wątki z kupującymi, odpisuje wiadomością
 // albo składa ofertę (ceny i ilości). Reguły (cena minimalna, stan, kolejka, rundy) pilnuje backend.
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { Link } from "react-router-dom"
 import { ChatBubbleLeftRight } from "@medusajs/icons"
 import { Badge, Button, Container, Heading, Input, Text, Textarea } from "@medusajs/ui"
 import type { RouteConfig } from "@mercurjs/dashboard-sdk"
@@ -24,6 +25,7 @@ type Negotiation = {
   requested: { variant_id: string; product_title: string; quantity: number }[]
   pricing: Pricing[]
   messages: Message[]
+  order: { id: string; display_id: number; total: number; status: string } | null
 }
 
 const POLL_MS = 2000
@@ -38,7 +40,8 @@ const STATUS: Record<string, string> = {
 }
 const KIND: Record<string, string> = { note: "Wiadomość", offer: "Oferta", counter: "Kontroferta", final: "Oferta końcowa", decline: "Odmowa", stop: "Koniec negocjacji" }
 const AUTHOR: Record<string, string> = { buyer: "Kupujący", buyer_agent: "Agent kupującego", seller_agent: "Ty", system: "System" }
-const CLOSED = ["final", "declined", "accepted", "rejected"]
+// Czat działa też po zakupie. Zamknięty tylko w wątkach odrzuconych.
+const CHAT_CLOSED = ["declined", "rejected"]
 
 async function api<T>(path: string, init?: { method?: string; body?: unknown }): Promise<T> {
   const response = await fetch(`${__BACKEND_URL__}${path}`, {
@@ -193,12 +196,24 @@ const RfqChatPage = () => {
             <Text size="small" className="text-ui-fg-subtle">
               {selected.requested.map((item) => `${item.quantity} × ${item.product_title}`).join(", ")}
             </Text>
+            {selected.order && (
+              <div className="rounded-lg bg-ui-bg-subtle px-3 py-2">
+                <Text size="small" weight="plus">
+                  <Link to={`/orders/${selected.order.id}`} className="underline">
+                    Zamówienie #{selected.order.display_id}
+                  </Link>
+                </Text>
+                <Text size="xsmall" className="text-ui-fg-muted">
+                  {pln.format(selected.order.total)} z dostawą · status: {selected.order.status}
+                </Text>
+              </div>
+            )}
             <div className="flex flex-1 flex-col gap-2">
               {selected.messages.map((message) => (
                 <Bubble key={message.id} message={message} titles={titles} />
               ))}
             </div>
-            {!CLOSED.includes(selected.status) ? (
+            {!CHAT_CLOSED.includes(selected.status) ? (
               <Reply key={selected.id} negotiation={selected} onSent={load} />
             ) : (
               <Text size="small" className="text-ui-fg-muted">Negocjacja zamknięta: {STATUS[selected.status]}.</Text>

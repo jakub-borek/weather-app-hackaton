@@ -32,6 +32,8 @@ export type RfqNegotiation = {
   round: number;
   messages: RfqMessage[];
   latest_total: number;
+  // Zamówienie u tego sprzedawcy po akceptacji (gość ma do niego dostęp przez link do RFQ).
+  order: { id: string; display_id: number; total: number; status: string } | null;
 };
 export type Rfq = {
   id: string;

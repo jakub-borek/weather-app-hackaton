@@ -118,7 +118,8 @@ async function testCartFlow(mba: string, t14: string): Promise<void> {
   check("kontroferta kupującego -> awaiting_seller", counter.body.negotiation?.status === "awaiting_seller", counter.body);
   const final = await sellerMsg(ist.id, istH, { kind: "final", lines: [{ variant_id: mba, quantity: 2, unit_price: 4450 }], text: "4450 końcowo" });
   check("oferta końcowa iStacji -> final", final.body.negotiation?.status === "final", final.body);
-  expectCode("note po zamknięciu", await sellerMsg(ist.id, istH, { kind: "note", text: "jeszcze coś" }), 422, "NEGOTIATION_CLOSED");
+  expectCode("note po ofercie końcowej (czat dalej działa)", await sellerMsg(ist.id, istH, { kind: "note", text: "jeszcze coś" }), 200);
+  expectCode("oferta po ofercie końcowej", await sellerMsg(ist.id, istH, { kind: "offer", lines: [{ variant_id: mba, quantity: 2, unit_price: 4600 }] }), 422, "NEGOTIATION_CLOSED");
 
   await sellerMsg(lap.id, lapH, { kind: "offer", lines: [{ variant_id: t14, quantity: 2, unit_price: 4300 }], text: "2 szt. po 4300" });
   const stop = await buyerMsg(lap.id, { kind: "stop", text: "Bierzemy" });
@@ -136,6 +137,10 @@ async function testCartFlow(mba: string, t14: string): Promise<void> {
   rfq = await view(rfq.id);
   check("RFQ accepted z order_group_id", rfq.status === "accepted" && !!rfq.order_group_id, rfq.status);
   expectCode("ponowna akceptacja", await call(`/store/rfqs/${rfq.id}/accept`, "POST", { accept_token: token, negotiation_ids: [ist.id] }), 422, "INVALID_STATE");
+  const withOrders = (await view(rfq.id)).negotiations as Json[];
+  check("każdy wątek ma swoje zamówienie", withOrders.every((n) => n.order?.display_id), withOrders.map((n) => n.order));
+  expectCode("czat kupującego po zakupie", await buyerMsg(ist.id, { author: "buyer", kind: "note", text: "Kiedy wysyłka?" }), 200);
+  expectCode("czat sprzedawcy po zakupie", await sellerMsg(ist.id, istH, { kind: "note", text: "Jutro." }), 200);
 }
 
 async function testAgentFlow(elitebook: string): Promise<void> {
@@ -164,6 +169,7 @@ async function testAgentFlow(elitebook: string): Promise<void> {
   check("limit rund: 2. ruch sprzedawcy wymuszony jako final", second.body.negotiation?.kind === "final" && second.body.negotiation?.status === "final", second.body);
   const decline = await sellerMsg(lp.id, lpH, { kind: "decline", text: "Nie mamy." });
   check("odmowa LaptoPolu -> declined", decline.body.negotiation?.status === "declined", decline.body);
+  expectCode("czat w odrzuconym wątku", await buyerMsg(lp.id, { kind: "note", text: "Szkoda" }), 422, "NEGOTIATION_CLOSED");
   check("RFQ -> ready po final + declined", (await view(rfqId)).status === "ready", "status");
 
   sql(`update rfq_message set created_at = now() - interval '31 minutes' where negotiation_id='${th.id}' and author='seller_agent'`);
