@@ -156,11 +156,11 @@
       "done_when": [
         "zamówienie z wynegocjowaną ceną widoczne w panelu admina i w panelu sprzedawcy"
       ],
-      "owner": "",
-      "status": "not-started",
-      "started_at": "",
+      "owner": "piotrkukuc12",
+      "status": "in-progress",
+      "started_at": "2026-11-05 19:30",
       "done_at": "",
-      "evidence": ""
+      "evidence": "createNegotiatedOrder() w src/lib/create-negotiated-order.ts. smoke-negotiated-order.ts: grupa og_01M6PEW9TP0E54SVBRG0CTKTM6, 2 zamówienia: 20 x MacBook @4400 -> TechHurt, 10 x HP @4250 -> LaptoPol (link order_order_seller_seller). Brakuje: podpięcia w trasie accept (F03) i sprawdzenia w panelach."
     },
     {
       "id": "F09",

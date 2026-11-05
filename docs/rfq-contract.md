@@ -178,6 +178,6 @@ Store API **nigdy** nie zwraca: ceny minimalnej, rabatów wolumenowych, `accept_
 
 ## Otwarte
 
-- **F08:** jak powstaje zamówienie po wynegocjowanej cenie (draft order czy koszyk z nadpisaną `unit_price`). Wynik sprawdzenia dopiszemy tutaj.
+- **F08 (rozwiązane, sprawdzone):** `createNegotiatedOrder(container, { lines: [{ offer_id, quantity, unit_price }], email, address })` w `marketplace/packages/api/src/lib/create-negotiated-order.ts`. Tworzy koszyk, dodaje pozycje z wynegocjowaną ceną po stronie serwera, dodaje wysyłkę każdego sprzedawcy i płatność systemową, potem `completeCartWithSplitOrdersWorkflow` dzieli koszyk na zamówienia per sprzedawca. Trasa `accept` woła tę funkcję z liniami ofert końcowych. `offer_id` wyznacza z pary (`seller_id`, `variant_id`), bo sprzedawca ma jedną ofertę na wariant. Uwaga: `POST /store/carts/:id/line-items` w Store API odrzuca `unit_price` (wbrew dokumentacji Mercura), więc ceny nie da się nadpisać z UI ani z agenta. I dobrze. Sprawdzenie: `bunx medusa exec ./src/scripts/smoke-negotiated-order.ts` (tworzy prawdziwe zamówienia i rezerwuje stan, przed demo zrób `./scripts/setup-marketplace.sh --reset`).
 - **Blok `messaging` Mercura:** odrzucony na teraz. Własna tabela `rfq_message` jest prostsza i daje strukturalne ceny, których potrzebuje F04.
 - **Autoryzacja agenta kupującego:** store API jest publiczne, więc każdy z kluczem może pisać jako kupujący. Na demo to akceptujemy.
