@@ -2,6 +2,7 @@
 
 Hackathon. Marketplace na open source Mercurze, w którym agent kupującego negocjuje z agentami sprzedawców, a człowiek akceptuje wynik i powstaje zamówienie.
 
+- **Pitch deck:** [`pitch/pitch.pdf`](pitch/pitch.pdf) (5 slajdów, wersja HTML ze strzałkami: `pitch/index.html`)
 - **Co budujemy:** [`product.md`](product.md)
 - **Jak pracujemy (ludzie i agenci):** [`AGENTS.md`](AGENTS.md)
 
