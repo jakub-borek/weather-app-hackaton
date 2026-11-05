@@ -172,31 +172,40 @@ export const latestSellerOffer = (negotiation: NegotiationRow) => {
 export const latestSellerLines = (negotiation: NegotiationRow): RfqLine[] => latestSellerOffer(negotiation)?.lines ?? [];
 
 export type RfqOrder = { id: string; display_id: number; total: number; status: string };
-type OrderWithVariants = { order: RfqOrder; variants: Set<string> };
+type OrderWithSeller = { order: RfqOrder; seller_id: string | null };
 
-// Zamówienia z akceptacji (grupa zamówień) z wariantami, żeby przypiąć je do wątków sprzedawców.
-async function loadGroupOrders(container: MedusaContainer, orderGroupId: string | null): Promise<OrderWithVariants[]> {
-  if (!orderGroupId) return [];
+// Zamówienia z akceptacji z ich sprzedawcą (z offer_id w metadata pozycji), żeby przypiąć je do wątków.
+// order_group_id może mieć kilka ID oddzielonych przecinkami (osobny koszyk na sprzedawcę, F08).
+async function loadGroupOrders(container: MedusaContainer, orderGroupId: string | null): Promise<OrderWithSeller[]> {
+  const groupIds = (orderGroupId ?? "").split(",").filter(Boolean);
+  if (!groupIds.length) return [];
   const query = container.resolve(ContainerRegistrationKeys.QUERY);
-  const { data: groups } = await query.graph({ entity: "order_group", fields: ["orders.id"], filters: { id: orderGroupId } });
-  const ids = ((groups[0]?.orders ?? []) as { id: string }[]).map((order) => order.id);
+  const { data: groups } = await query.graph({ entity: "order_group", fields: ["orders.id"], filters: { id: groupIds } });
+  const ids = (groups as { orders?: { id: string }[] }[]).flatMap((group) => group.orders ?? []).map((order) => order.id);
   if (!ids.length) return [];
   const { data } = await query.graph({
     entity: "order",
-    fields: ["id", "display_id", "total", "status", "items.variant_id"],
+    fields: ["id", "display_id", "total", "status", "items.metadata"],
     filters: { id: ids },
   });
-  return (data as Record<string, any>[]).map((order) => ({
+  const orders = data as Record<string, any>[];
+  const firstOffer = (order: Record<string, any>): string | undefined =>
+    (order.items ?? []).map((item: { metadata?: { offer_id?: string } }) => item.metadata?.offer_id).find(Boolean);
+  const offerIds = orders.map(firstOffer).filter((id): id is string => !!id);
+  const { data: offers } = offerIds.length
+    ? await query.graph({ entity: "offer", fields: ["id", "seller_id"], filters: { id: offerIds } })
+    : { data: [] };
+  const sellerByOffer = new Map((offers as { id: string; seller_id: string }[]).map((offer) => [offer.id, offer.seller_id]));
+  return orders.map((order) => ({
     order: { id: order.id, display_id: order.display_id, total: Number(order.total), status: order.status },
-    variants: new Set((order.items ?? []).map((item: { variant_id: string }) => item.variant_id)),
+    seller_id: sellerByOffer.get(firstOffer(order) ?? "") ?? null,
   }));
 }
 
-const orderForNegotiation = (orders: OrderWithVariants[], negotiation: NegotiationRow): RfqOrder | null => {
-  if (negotiation.status !== "accepted") return null;
-  const lines = latestSellerLines(negotiation);
-  return orders.find((entry) => lines.some((line) => entry.variants.has(line.variant_id)))?.order ?? null;
-};
+const orderForNegotiation = (orders: OrderWithSeller[], negotiation: NegotiationRow): RfqOrder | null =>
+  negotiation.status === "accepted"
+    ? orders.find((entry) => entry.seller_id === negotiation.seller_id)?.order ?? null
+    : null;
 
 async function sellerNames(container: MedusaContainer, ids: string[]): Promise<Map<string, string>> {
   if (!ids.length) return new Map();

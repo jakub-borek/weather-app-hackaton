@@ -52,15 +52,22 @@ async function resolveCartContext(container: MedusaContainer): Promise<{ regionI
   return { regionId: region.id, salesChannelId: store.default_sales_channel_id };
 }
 
-async function variantIdsByOffer(container: MedusaContainer, offerIds: string[]): Promise<Map<string, string>> {
+type OfferRef = { variant_id: string; seller_id: string };
+
+async function offersById(container: MedusaContainer, offerIds: string[]): Promise<Map<string, OfferRef>> {
   const query = container.resolve(ContainerRegistrationKeys.QUERY);
-  const { data } = await query.graph({ entity: "offer", fields: ["id", "variant_id"], filters: { id: offerIds } });
-  const variants = new Map((data as { id: string; variant_id: string }[]).map((offer) => [offer.id, offer.variant_id]));
-  const missing = offerIds.filter((id) => !variants.has(id));
+  const { data } = await query.graph({ entity: "offer", fields: ["id", "variant_id", "seller_id"], filters: { id: offerIds } });
+  const offers = new Map(
+    (data as { id: string; variant_id: string; seller_id: string }[]).map((offer) => [
+      offer.id,
+      { variant_id: offer.variant_id, seller_id: offer.seller_id },
+    ])
+  );
+  const missing = offerIds.filter((id) => !offers.has(id));
   if (missing.length) {
     throw new Error(`Nie ma ofert: ${missing.join(", ")}`);
   }
-  return variants;
+  return offers;
 }
 
 // Zbiera ID opcji wysyłki z mapy sprzedawca → opcje (kształt wyniku workflow Mercura).
@@ -108,16 +115,18 @@ async function addSystemPayment(container: MedusaContainer, cartId: string): Pro
   });
 }
 
-export async function createNegotiatedOrder(
+type CartContext = { regionId: string; salesChannelId: string; offers: Map<string, OfferRef> };
+
+// Jeden koszyk = jeden sprzedawca. Mercur nie pozwala mieć w koszyku tego samego wariantu z dwóch ofert,
+// a kupujący może wziąć np. MacBooki od trzech sklepów. Sprzedawca ma jedną ofertę na wariant, więc to bezpieczne.
+async function completeSellerCart(
   container: MedusaContainer,
-  input: NegotiatedOrderInput
+  context: CartContext,
+  input: NegotiatedOrderInput,
+  lines: NegotiatedLine[]
 ): Promise<NegotiatedOrderResult> {
-  if (!input.lines.length || input.lines.some((line) => line.quantity <= 0 || line.unit_price <= 0)) {
-    throw new Error("Zamówienie wymaga co najmniej jednej pozycji z dodatnią ilością i ceną");
-  }
   const query = container.resolve(ContainerRegistrationKeys.QUERY);
-  const { regionId, salesChannelId } = await resolveCartContext(container);
-  const variants = await variantIdsByOffer(container, input.lines.map((line) => line.offer_id));
+  const { regionId, salesChannelId, offers } = context;
 
   const { result: cart } = await createCartWorkflow(container).run({
     input: {
@@ -133,8 +142,8 @@ export async function createNegotiatedOrder(
   await addToCartWorkflow(container).run({
     input: {
       cart_id: cart.id,
-      items: input.lines.map((line) => ({
-        variant_id: variants.get(line.offer_id) as string,
+      items: lines.map((line) => ({
+        variant_id: offers.get(line.offer_id)?.variant_id as string,
         quantity: line.quantity,
         unit_price: line.unit_price,
         offer_id: line.offer_id,
@@ -155,4 +164,28 @@ export async function createNegotiatedOrder(
   const { data } = await query.graph({ entity: "order_group", fields: ["id", "orders.id"], filters: { id: orderGroupId } });
   const orderIds = ((data[0]?.orders ?? []) as { id: string }[]).map((order) => order.id);
   return { cart_id: cart.id, order_group_id: orderGroupId, order_ids: orderIds };
+}
+
+// Wynik zbiorczy: cart_id i order_group_id to listy ID oddzielone przecinkami (jedna pozycja na sprzedawcę).
+export async function createNegotiatedOrder(
+  container: MedusaContainer,
+  input: NegotiatedOrderInput
+): Promise<NegotiatedOrderResult> {
+  if (!input.lines.length || input.lines.some((line) => line.quantity <= 0 || line.unit_price <= 0)) {
+    throw new Error("Zamówienie wymaga co najmniej jednej pozycji z dodatnią ilością i ceną");
+  }
+  const { regionId, salesChannelId } = await resolveCartContext(container);
+  const offers = await offersById(container, input.lines.map((line) => line.offer_id));
+  const sellerIds = [...new Set(input.lines.map((line) => offers.get(line.offer_id)?.seller_id as string))];
+
+  let results: NegotiatedOrderResult[] = [];
+  for (const sellerId of sellerIds) {
+    const lines = input.lines.filter((line) => offers.get(line.offer_id)?.seller_id === sellerId);
+    results = [...results, await completeSellerCart(container, { regionId, salesChannelId, offers }, input, lines)];
+  }
+  return {
+    cart_id: results.map((result) => result.cart_id).join(","),
+    order_group_id: results.map((result) => result.order_group_id).join(","),
+    order_ids: results.flatMap((result) => result.order_ids),
+  };
 }
