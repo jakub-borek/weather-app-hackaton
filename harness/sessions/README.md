@@ -1,5 +1,7 @@
 # Eksport sesji agentów
 
+> **Uwaga:** organizatorzy wymagają eksportów w **`/sessions` w roocie repo**. Zapisuj tam, nie tutaj. Instrukcja: [`sessions/README.md`](../../sessions/README.md).
+
 Tu trafiają wyeksportowane rozmowy z agentami. W rozmowie z jurorem padło, że sesje trzeba będzie wyeksportować. Nawet jeśli to nie jest wymóg, to najpełniejszy zapis tego, jak powstawał kod.
 
 ## Jak

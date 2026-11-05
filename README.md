@@ -1,6 +1,8 @@
 # Marketplace RFQ z negocjacją agentów
 
 > **Judges, start here: [Pitch deck (PDF, 5 slides)](pitch/pitch.pdf)**. Interactive version: [`pitch/index.html`](pitch/index.html) (download and open locally, arrow keys to navigate).
+>
+> AI coding session exports: [`sessions/`](sessions/). Product spec (Polish): [`product.md`](product.md).
 
 Hackathon. Marketplace na open source Mercurze, w którym agent kupującego negocjuje z agentami sprzedawców, a człowiek akceptuje wynik i powstaje zamówienie.
 
@@ -53,5 +55,6 @@ Szczegóły, limity darmowego ngrok i pułapki: [`docs/share-ngrok.md`](docs/sha
 | `progress.md` | stan na teraz, blok na każdy strumień |
 | `session-handoff.md` | checkpoint całego zespołu |
 | `harness/journal/` | historia pracy każdej osoby (`./scripts/log.sh`) |
-| `harness/sessions/` | wyeksportowane sesje agentów |
+| `sessions/` | wyeksportowane sesje AI (wymóg organizatorów, instrukcja w `sessions/README.md`) |
+| `pitch/` | prezentacja: `index.html` (edytujesz), `pitch.pdf` (`./scripts/pitch-pdf.sh`) |
 | `scripts/status.sh` | stan zespołu w jednym widoku |

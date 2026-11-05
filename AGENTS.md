@@ -76,7 +76,7 @@ Chcemy wiedzieć jak najwięcej o tym, co się działo. Agent zapisuje to sam, b
 | `harness/journal/<ty>.md` | pełna historia twojej pracy | ty, przez `./scripts/log.sh` | tylko dopisujesz |
 | `progress.md` | stan na teraz | każdy w swoim bloku | nadpisujesz swój blok |
 | `session-handoff.md` | checkpoint całego zespołu | osoba robiąca checkpoint | nadpisujesz |
-| `harness/sessions/` | wyeksportowane sesje agentów | każdy | nowy plik na sesję |
+| `sessions/` | wyeksportowane sesje agentów (wymóg organizatorów) | każdy | nowy plik na sesję |
 | `git log` | oś czasu | wszyscy | ID feature'a w każdym commicie |
 
 Każdy ma swój journal, więc dopisywanie nie robi konfliktów w gicie.
@@ -121,7 +121,7 @@ Testów automatycznych nie piszemy (hackathon, decyzja zespołu, zob. „Tryb ha
 1. `./scripts/log.sh DONE "..."` albo `NOTE "przerywam w trakcie, zostało: ..."`.
 2. Zaktualizuj swój blok w `progress.md`.
 3. Zaktualizuj swoje wpisy w `feature_list.json`.
-4. Wyeksportuj sesję agenta do `harness/sessions/` (szczegóły w `harness/sessions/README.md`).
+4. Wyeksportuj sesję agenta do `sessions/` w roocie repo (szczegóły w `sessions/README.md`).
 5. `./init.sh`, potem commit, `git pull --rebase`, push.
 6. Zostaw repo clean i restartable: następna osoba odpala `./init.sh` i może pracować.
 
