@@ -1,0 +1,36 @@
+# Lokalna infrastruktura dla Mercura: Postgres + Redis. Tylko to, nic więcej (tryb hackathonu, AGENTS.md).
+# Aplikacji nie dockeryzujemy: backend, storefront, panele i agenci startują natywnie (bun run dev).
+# Docker nie działa? Nie debuguj go: brew services start postgresql i zmień DATABASE_URL w .env.
+# Start: docker compose up -d --wait
+# Reset danych (np. przed ponownym seedem): docker compose down -v
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: rfq-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mercur
+    ports:
+      - "5432:5432"
+    volumes:
+      - rfq-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mercur"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    container_name: rfq-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  rfq-postgres-data:
