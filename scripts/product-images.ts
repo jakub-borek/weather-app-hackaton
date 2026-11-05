@@ -219,5 +219,26 @@ async function attachImages(): Promise<void> {
   console.log(`Zdjęcia przypięte do ${updated}/${products.length} produktów.`);
 }
 
+// Storefront trzyma listę produktów w cache Next (cacheLife "max"), więc bez tego
+// pokazuje stare dane, czyli szare zaślepki zamiast zdjęć.
+async function revalidateStorefront(): Promise<void> {
+  const envFile = join(import.meta.dir, "../marketplace/apps/storefront/.env.local");
+  const fallback = join(import.meta.dir, "../marketplace/apps/storefront/.env");
+  const env = [envFile, fallback].filter(existsSync).map((f) => Bun.file(f).text());
+  const secret = (await Promise.all(env)).join("\n").match(/^REVALIDATE_SECRET="?([^"\n]+)"?/m)?.[1];
+  const url = process.env.STOREFRONT_URL ?? "http://localhost:3000";
+  try {
+    const response = await fetch(`${url}/api/revalidate`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-revalidate-secret": secret ?? "" },
+      body: JSON.stringify({ tags: ["products", "offers", "categories", "collections", "sellers"] }),
+    });
+    console.log(`Cache storefrontu: ${response.ok ? "odświeżony" : `nie odświeżony (${response.status})`}`);
+  } catch {
+    console.log("Storefront nie chodzi, cache odświeży się przy jego starcie.");
+  }
+}
+
 await downloadAll();
 await attachImages();
+await revalidateStorefront();
