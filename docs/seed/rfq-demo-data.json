@@ -1,0 +1,146 @@
+{
+  "_comment": "Dane demo dla F02. Jedno źródło prawdy dla seeda Mercura i mocków agentów (S3) i storefrontu (S4). Ceny netto w PLN, jednostki główne (4690 = 4690,00 zł). Pola rules.* są prywatne: nie mogą trafić do API sklepu.",
+  "currency_code": "pln",
+  "region": { "name": "Polska", "countries": ["pl"] },
+  "category": { "name": "Laptopy", "handle": "laptopy" },
+  "variant_axis": { "name": "Konfiguracja", "handle": "konfiguracja" },
+  "seller_password": "supersecret",
+  "sellers": [
+    {
+      "key": "techhurt",
+      "name": "TechHurt",
+      "email": "techhurt@example.com",
+      "first_name": "Tomasz",
+      "last_name": "Hurtowy",
+      "city": "Warszawa",
+      "address_1": "ul. Prosta 20",
+      "country_code": "pl",
+      "description": "Hurtownia IT. Wszystkie trzy marki, najniższe ceny katalogowe, ale małe stany."
+    },
+    {
+      "key": "laptopol",
+      "name": "LaptoPol",
+      "email": "laptopol@example.com",
+      "first_name": "Łucja",
+      "last_name": "Laptopowa",
+      "city": "Kraków",
+      "address_1": "ul. Wielicka 44",
+      "country_code": "pl",
+      "description": "Lenovo i HP dla firm. Duże stany magazynowe."
+    },
+    {
+      "key": "istacja",
+      "name": "iStacja",
+      "email": "istacja@example.com",
+      "first_name": "Igor",
+      "last_name": "Stacyjny",
+      "city": "Gdańsk",
+      "address_1": "ul. Grunwaldzka 82",
+      "country_code": "pl",
+      "description": "Specjalista Apple. Tylko MacBooki."
+    }
+  ],
+  "products": [
+    {
+      "key": "macbook-air-13-m4",
+      "title": "Apple MacBook Air 13\" M4",
+      "brand": "Apple",
+      "sku": "MBA13-M4-16-512",
+      "configuration": "16 GB RAM / 512 GB SSD",
+      "description": "MacBook Air 13 cali z czipem M4, 16 GB pamięci zunifikowanej i dyskiem SSD 512 GB."
+    },
+    {
+      "key": "thinkpad-t14-gen5",
+      "title": "Lenovo ThinkPad T14 Gen 5",
+      "brand": "Lenovo",
+      "sku": "T14G5-U5-16-512",
+      "configuration": "16 GB RAM / 512 GB SSD",
+      "description": "ThinkPad T14 Gen 5 z procesorem Intel Core Ultra 5, 16 GB RAM i dyskiem SSD 512 GB."
+    },
+    {
+      "key": "elitebook-840-g11",
+      "title": "HP EliteBook 840 G11",
+      "brand": "HP",
+      "sku": "EB840G11-U5-16-512",
+      "configuration": "16 GB RAM / 512 GB SSD",
+      "description": "HP EliteBook 840 G11 z procesorem Intel Core Ultra 5, 16 GB RAM i dyskiem SSD 512 GB."
+    }
+  ],
+  "offers": [
+    {
+      "seller": "techhurt",
+      "product": "macbook-air-13-m4",
+      "list_price": 4690,
+      "stock": 25,
+      "leadtime_days": 1,
+      "rules": {
+        "min_unit_price": 4390,
+        "volume_discounts": [
+          { "min_qty": 10, "pct": 2 },
+          { "min_qty": 20, "pct": 4 }
+        ]
+      }
+    },
+    {
+      "seller": "istacja",
+      "product": "macbook-air-13-m4",
+      "list_price": 4790,
+      "stock": 60,
+      "leadtime_days": 3,
+      "rules": {
+        "min_unit_price": 4290,
+        "volume_discounts": [
+          { "min_qty": 10, "pct": 3 },
+          { "min_qty": 20, "pct": 6 }
+        ]
+      }
+    },
+    {
+      "seller": "techhurt",
+      "product": "thinkpad-t14-gen5",
+      "list_price": 4290,
+      "stock": 15,
+      "leadtime_days": 1,
+      "rules": {
+        "min_unit_price": 3990,
+        "volume_discounts": [{ "min_qty": 10, "pct": 3 }]
+      }
+    },
+    {
+      "seller": "laptopol",
+      "product": "thinkpad-t14-gen5",
+      "list_price": 4390,
+      "stock": 80,
+      "leadtime_days": 2,
+      "rules": {
+        "min_unit_price": 3950,
+        "volume_discounts": [
+          { "min_qty": 10, "pct": 3 },
+          { "min_qty": 25, "pct": 7 }
+        ]
+      }
+    },
+    {
+      "seller": "techhurt",
+      "product": "elitebook-840-g11",
+      "list_price": 4490,
+      "stock": 8,
+      "leadtime_days": 1,
+      "rules": {
+        "min_unit_price": 4250,
+        "volume_discounts": []
+      }
+    },
+    {
+      "seller": "laptopol",
+      "product": "elitebook-840-g11",
+      "list_price": 4590,
+      "stock": 40,
+      "leadtime_days": 2,
+      "rules": {
+        "min_unit_price": 4190,
+        "volume_discounts": [{ "min_qty": 10, "pct": 4 }]
+      }
+    }
+  ]
+}
